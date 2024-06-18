@@ -102,7 +102,7 @@ def plot(use_human_abstract):
     llms = get_llm_accuracies(model_results_dir, use_human_abstract)
 
     plt.rcParams.update({'font.size': 16, 'font.weight': 'bold'})
-    fig, ax = plt.subplots(figsize=(8, 6))
+    fig, ax = plt.subplots(figsize=(16, 12))
 
     # llms
     all_llm_accuracies = []
@@ -111,6 +111,7 @@ def plot(use_human_abstract):
     all_llm_colors = []
     all_llm_hatches = []
     all_llm_xticks = []
+    all_llm_alphas = []
 
     for family_index, llm_family in enumerate(llms.keys()):
         for llm in llms[llm_family]:
@@ -119,22 +120,26 @@ def plot(use_human_abstract):
             all_llm_names.append(llms[llm_family][llm]["llm"])
             all_llm_colors.append(llms[llm_family][llm]["color"])
             all_llm_hatches.append(llms[llm_family][llm]["hatch"])
+            all_llm_alphas.append(llms[llm_family][llm]["alpha"])
             # # Anchor on `family_index`
             # # llm within a family should be spaced out smaller than between families
-            all_llm_xticks.append(family_index + len(all_llm_xticks))
+            all_llm_xticks.append(family_index*3 + len(all_llm_xticks))
     
     # Bar
-    ax.bar(
-        all_llm_xticks,
-        all_llm_accuracies,
-        yerr=all_llm_sems,
-        color=all_llm_colors,
-        hatch=all_llm_hatches,
-        alpha=0.7,
-        label=all_llm_names,
-        edgecolor='k',
-        capsize=3
-    )
+    for i in range(len(all_llm_xticks)):
+        ax.bar(
+            all_llm_xticks[i],
+            all_llm_accuracies[i],
+            yerr=all_llm_sems[i],
+            color=all_llm_colors[i],
+            hatch=all_llm_hatches[i],
+            alpha=all_llm_alphas[i],
+            label=all_llm_names[i],
+            edgecolor='k',
+            capsize=3
+        )
+    
+    ax.legend(all_llm_names, loc='upper left')
 
     # human
     # plot as horizontal line
@@ -170,7 +175,6 @@ def plot(use_human_abstract):
     ax.spines['top'].set_visible(False)
     ax.grid(axis='y', linestyle='--', alpha=0.6)
 
-    plt.legend(all_llm_names, loc='lower left')
     plt.tight_layout()
     if use_human_abstract:
         plt.savefig(f"{base_fname}_human_abstract.pdf")
