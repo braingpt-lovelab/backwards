@@ -228,14 +228,14 @@ def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
         )
     
     # Load model untrained (config only)
-    elif model_fpath == "gpt2_init":
-        print("Loading GPT2 model untrained")
+    # elif model_fpath == "gpt2_init":
+    elif "init" in model_fpath:
+        model_name = model_fpath.split("_")[0]
+        print(f"Loading {model_name} model untrained")
         from transformers import AutoConfig, AutoModelForCausalLM
-        model_config = AutoConfig.from_pretrained("gpt2")
+        model_config = AutoConfig.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_config(model_config).to('cuda')
-        tokenizer = transformers.GPT2Tokenizer.from_pretrained(
-            "gpt2",
-        )
+        tokenizer = transformers.GPT2Tokenizer.from_pretrained(model_name)
 
     # Load pretrained model
     else:
