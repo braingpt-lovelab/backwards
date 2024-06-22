@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import scipy.stats as stats
 from utils import model_utils
 
-plt.rcParams.update({"font.size": 12, "font.weight": "bold"})
+plt.rcParams.update({"font.size": 22, "font.weight": "bold"})
 
 
 def average_acc_across_cases_participants(who="human"):
@@ -243,6 +243,9 @@ if __name__ == "__main__":
     online_study_data = pd.read_csv(f"{human_results_dir}/data/participant_data.csv")
 
     llms = model_utils.model_list
+
+    # We only consider GPT-2 family models
+    llms = {k: v for k, v in llms.items() if "gpt2" in k}
 
     # human 200 cases in model eval order 
     human_abstracts = pd.read_csv("testcases/BrainBench_Human_v0.1.csv")
