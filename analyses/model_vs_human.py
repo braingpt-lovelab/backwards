@@ -12,6 +12,9 @@ from utils.general_utils import scorer_acc, scorer_sem
 
 def get_llm_accuracies(model_results_dir, use_human_abstract=True):
     llms = model_list
+    # Remove all keys except "gpt2"
+    # To plot only the GPT-2 family models.
+    llms = {k: v for k, v in llms.items() if "gpt2" in k}
     for llm_family in llms.keys():
         for llm in llms[llm_family]:
             if use_human_abstract:
@@ -102,7 +105,7 @@ def plot(use_human_abstract):
     llms = get_llm_accuracies(model_results_dir, use_human_abstract)
 
     plt.rcParams.update({'font.size': 16, 'font.weight': 'bold'})
-    fig, ax = plt.subplots(figsize=(16, 12))
+    fig, ax = plt.subplots(figsize=(8, 6))
 
     # llms
     all_llm_accuracies = []
@@ -123,8 +126,10 @@ def plot(use_human_abstract):
             all_llm_alphas.append(llms[llm_family][llm]["alpha"])
             # # Anchor on `family_index`
             # # llm within a family should be spaced out smaller than between families
-            all_llm_xticks.append(family_index*3 + len(all_llm_xticks))
+            all_llm_xticks.append(family_index + len(all_llm_xticks))
     
+    print(all_llm_xticks)
+
     # Bar
     for i in range(len(all_llm_xticks)):
         ax.bar(
@@ -144,14 +149,14 @@ def plot(use_human_abstract):
     # human
     # plot as horizontal line
     human_acc, human_sem = get_human_accuracies(use_human_abstract)
-    ax.axhline(y=human_acc, color='b', linestyle='--', lw=3)
-    # ax.fill_between(
-    #     [all_llm_xticks[0], all_llm_xticks[-1]+1],
-    #     human_acc - human_sem,
-    #     human_acc + human_sem,
-    #     color='b',
-    #     alpha=0.3
-    # )
+    hline = ax.axhline(y=human_acc, color='b', linestyle='--', lw=3)
+    ax.fill_between(
+        [hline.get_xdata()[0], all_llm_xticks[-1]+1],
+        human_acc - human_sem,
+        human_acc + human_sem,
+        color='b',
+        alpha=0.3
+    )
 
     print('human_acc:', human_acc)
     human_acc_top_expertise, _ = get_human_accuracies_top_expertise(use_human_abstract)
@@ -160,16 +165,16 @@ def plot(use_human_abstract):
     # Add annotations (Human expert)
     # In the middle of the plot, below the horizontal line
     ax.text(
-        (all_llm_xticks[-1]),
-        human_acc+0.01,
-        "Human experts",
+        all_llm_xticks[-1]+0.5,
+        human_acc+0.03,
+        "Human\nexperts",
         fontsize=16,
         color='k'
     )
 
     ax.set_ylabel("Accuracy")
-    ax.set_ylim([0., 1])
-    ax.set_xlim([None, all_llm_xticks[-1]+1])
+    ax.set_ylim([0.5, 1])
+    # ax.set_xlim([None, all_llm_xticks[-1]+1])
     ax.set_xticks([])
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
