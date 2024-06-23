@@ -84,9 +84,12 @@ def ppl_distributional_diff():
         axes[subplot_idx].set_title(f"{forwards_model_print_name}")
         axes[subplot_idx].spines['top'].set_visible(False)
         axes[subplot_idx].spines['right'].set_visible(False)
-        print(np.mean(forwards_PPL_correct), np.mean(backwards_PPL_correct))
-
-
+        
+        # T-test
+        t_stat, p_val = stats.ttest_ind(forwards_PPL_correct, backwards_PPL_correct)
+        print(f"Correct PPL: {forwards_model_print_name} vs {backwards_model_print_name}")
+        print(f"t({len(forwards_PPL_correct)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
+              
 
         subplot_idx = model_pair_idx * n_cols + 1
         sns.kdeplot(forwards_PPL_diff, label="Forwards", ax=axes[subplot_idx])
@@ -96,7 +99,11 @@ def ppl_distributional_diff():
         axes[subplot_idx].set_title(f"{forwards_model_print_name}")
         axes[subplot_idx].spines['top'].set_visible(False)
         axes[subplot_idx].spines['right'].set_visible(False)
-        print(np.mean(forwards_PPL_diff), np.mean(backwards_PPL_diff))
+
+        # T-test
+        t_stat, p_val = stats.ttest_ind(forwards_PPL_diff, backwards_PPL_diff)
+        print(f"Incorrect-Correct PPL: {forwards_model_print_name} vs {backwards_model_print_name}")
+        print(f"t({len(forwards_PPL_diff)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
 
         axes[-2].set_xlabel("PPL correct")
         axes[-1].set_xlabel("PPL incorrect-correct")
