@@ -86,6 +86,11 @@ def ppl_distributional_diff():
         axes[subplot_idx].spines['right'].set_visible(False)
         axes[subplot_idx].set_xlim([1, 10])
 
+        # T-test
+        t_stat, p_val = stats.ttest_ind(forwards_train_ppl, backwards_train_ppl)
+        print(f"{forwards_model_print_name} vs {backwards_model_print_name} train PPL")
+        print(f"t({len(forwards_train_ppl)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
+
         # Plot val ppl distribution
         forwards_val_ppl, backwards_val_ppl = \
             _load_ppl(forwards_model_fullname, backwards_model_fullname, "val")
@@ -98,6 +103,11 @@ def ppl_distributional_diff():
         axes[model_pair_idx*n_cols+1].spines['top'].set_visible(False)
         axes[model_pair_idx*n_cols+1].spines['right'].set_visible(False)
         axes[model_pair_idx*n_cols+1].set_xlim([1, 10])
+
+        # T-test
+        t_stat, p_val = stats.ttest_ind(forwards_val_ppl, backwards_val_ppl)
+        print(f"{forwards_model_print_name} vs {backwards_model_print_name} val PPL")
+        print(f"t({len(forwards_val_ppl)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
 
         axes[-2].set_xlabel("Training log(PPL)")
         axes[-1].set_xlabel("Validation log(PPL)")
