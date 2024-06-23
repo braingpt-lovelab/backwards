@@ -8,7 +8,7 @@ from utils.model_utils import model_list
 plt.rcParams.update({'font.size': 16, 'font.weight': 'bold'})
 
 """
-Compare BrainBench testcases error magnitude between forwards and backwards models.
+Compare BrainBench testcases PPL magnitudes between forwards and backwards models.
 
 1. PPL distributional difference of correct options between forwards and backwards models.
 2. PPL distributional difference of incorrect-correct options between forwards and backwards models.
@@ -103,7 +103,7 @@ def ppl_distributional_diff():
 
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f"{figs_dir}/ppl_distributional_diff.pdf")
+    plt.savefig(f"{figs_dir}/ppl_distributional_diff_test.pdf")
 
 
 if __name__ == "__main__":
