@@ -47,6 +47,19 @@ def scorer_sem(PPL_A_and_B, labels):
     return sem
 
 
+def scorer_ppl_diff(PPL_A_and_B, labels):
+    """
+    Return ppl_incorrect - ppl_correct for all items
+    """
+    ppl_diff = np.zeros(PPL_A_and_B.shape[0])
+    for row_index, (ppl_A, ppl_B) in enumerate(PPL_A_and_B):
+        if labels[row_index] == 0:
+            ppl_diff[row_index] = ppl_B - ppl_A
+        else:
+            ppl_diff[row_index] = ppl_A - ppl_B
+    return ppl_diff
+
+
 def str2bool(v):
     """
     Purpose:
