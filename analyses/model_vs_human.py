@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 from utils.model_utils import model_list
 from utils.general_utils import str2bool
-from utils.general_utils import scorer_acc, scorer_sem
+from utils.general_utils import scorer_acc, scorer_sem, scorer_ppl_diff
 
 
 def get_llm_accuracies(model_results_dir, use_human_abstract=True):
@@ -33,8 +33,10 @@ def get_llm_accuracies(model_results_dir, use_human_abstract=True):
 
             acc = scorer_acc(PPL_A_and_B, labels)
             sem = scorer_sem(PPL_A_and_B, labels)
+            ppl_diff = scorer_ppl_diff(PPL_A_and_B, labels)
             llms[llm_family][llm]["acc"] = acc
             llms[llm_family][llm]["sem"] = sem
+            llms[llm_family][llm]["ppl_diff"] = ppl_diff
             
     return llms
 
@@ -110,6 +112,7 @@ def plot(use_human_abstract):
     # llms
     all_llm_accuracies = []
     all_llm_sems = []
+    all_llm_ppl_diffs = []
     all_llm_names = []
     all_llm_colors = []
     all_llm_hatches = []
@@ -120,6 +123,7 @@ def plot(use_human_abstract):
         for llm in llms[llm_family]:
             all_llm_accuracies.append(llms[llm_family][llm]["acc"])
             all_llm_sems.append(llms[llm_family][llm]["sem"])
+            all_llm_ppl_diffs.append(llms[llm_family][llm]["ppl_diff"])
             all_llm_names.append(llms[llm_family][llm]["llm"])
             all_llm_colors.append(llms[llm_family][llm]["color"])
             all_llm_hatches.append(llms[llm_family][llm]["hatch"])
@@ -185,6 +189,19 @@ def plot(use_human_abstract):
         plt.savefig(f"{base_fname}_human_abstract.pdf")
     else:
         plt.savefig(f"{base_fname}_llm_abstract.pdf")
+
+    # Significance testing
+    # Compare two models within the same family
+    # by independent t-test using ppl_diff
+    for family_index, llm_family in enumerate(llms.keys()):
+        llm_names = list(llms[llm_family].keys())
+        
+        llm_fwd_ppl_diff = llms[llm_family][llm_names[0]]["ppl_diff"]
+        llm_bwd_ppl_diff = llms[llm_family][llm_names[1]]["ppl_diff"]
+
+        t_stat, p_val = stats.ttest_ind(llm_fwd_ppl_diff, llm_bwd_ppl_diff)
+        dof = len(llm_fwd_ppl_diff) + len(llm_bwd_ppl_diff) - 2
+        print(f"{llms[llm_family][llm_names[0]]['llm']}, t({dof})={t_stat:.3f}, p={p_val:.3f}")
 
 
 if __name__ == "__main__":
