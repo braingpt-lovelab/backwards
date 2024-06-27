@@ -12,22 +12,15 @@ plt.rcParams.update({'font.size': 16, 'font.weight': 'bold'})
 """
 Compare GPT-2 variants val PPL magnitudes between forwards and backwards models.
 
-1. PPL distributional difference of val ppl between forwards and backwards models.
-
 val ppl data format:
     e.g. 
-    for GPT2, forwards_train_data_fpath = "data/gpt2_scratch_neuro_tokenizer_{train/val}.csv"
-              backwards_train_data_fpath = "data/gpt2_scratch_neuro_tokenizer_backwards_{train/val}.csv"
+    for GPT2, forwards_train_data_fpath = "model_results/{model}/{human_abstracts}/all_batches_ppl_val.npy"
+    where the numpy array contains ppl of all validation items.
     
-    Columns of interest: `{Training/Validation} PPL`
-
-
 Plotting:
     Figure layout: 
         Rows * 3: model of the same size (GPT2, GPT2-medium, GPT2-large)
-        Columns * 2: distribution of train ppl and val ppl
-    
-    For each subplot, plot the distribution of train/val ppl for forwards and backwards models.
+        Columns * 1: distribution of val ppl
 """
 
 def _load_ppl(
@@ -81,7 +74,8 @@ def ppl_distributional_diff():
         # T-test
         t_stat, p_val = stats.ttest_ind(forwards_val_ppl, backwards_val_ppl)
         print(f"{forwards_model_print_name} vs {backwards_model_print_name} val PPL")
-        print(f"t({len(forwards_val_ppl)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
+        dof = len(forwards_val_ppl) + len(backwards_val_ppl) - 2
+        print(f"t({dof}) = {t_stat:.3f}, p = {p_val:.3f}")
 
         axes[-1].set_xlabel("Validation PPL")
 
