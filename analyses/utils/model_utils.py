@@ -218,9 +218,10 @@ def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
             "finetune_gpt2",
             "finetune_gpt2_lr2e-6",
             "gpt2_scratch_neuro_tokenizer",
-            "gpt2-large_scratch_neuro_tokenizer",
             "gpt2_scratch_neuro_tokenizer_backwards",
+            "gpt2-medium_scratch_neuro_tokenizer",
             "gpt2-medium_scratch_neuro_tokenizer_backwards",
+            "gpt2-large_scratch_neuro_tokenizer",
             "gpt2-large_scratch_neuro_tokenizer_backwards",
         ]:
         model_fpath = f"/home/ken/projects/matching_experts/model_training/exp/{model_fpath}/checkpoint.4"
