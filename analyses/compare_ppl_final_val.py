@@ -40,7 +40,7 @@ def _load_ppl(
 def ppl_distributional_diff():
     n_rows = 3
     n_cols = 1
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(5, 10))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(5, 8))
     axes = axes.flatten()
 
     model_pairs = []
@@ -70,6 +70,8 @@ def ppl_distributional_diff():
         axes[subplot_idx].set_title(f"{forwards_model_print_name}")
         axes[subplot_idx].spines['top'].set_visible(False)
         axes[subplot_idx].spines['right'].set_visible(False)
+        axes[subplot_idx].set_xlim([0, 200])
+        axes[subplot_idx].set_ylim([0, 0.1])
 
         # T-test
         t_stat, p_val = stats.ttest_ind(forwards_val_ppl, backwards_val_ppl)
