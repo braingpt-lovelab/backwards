@@ -187,6 +187,7 @@ def plot(use_human_abstract):
     plt.tight_layout()
     if use_human_abstract:
         plt.savefig(f"{base_fname}_human_abstract.pdf")
+        plt.savefig(f"{base_fname}_human_abstract.svg")
     else:
         plt.savefig(f"{base_fname}_llm_abstract.pdf")
 
