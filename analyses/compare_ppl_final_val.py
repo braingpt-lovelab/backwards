@@ -81,7 +81,7 @@ def ppl_distributional_diff():
 
         axes[-1].set_xlabel("Validation PPL")
 
-    plt.legend()
+    axes[0].legend()
     plt.tight_layout()
     plt.savefig("figs/ppl_distributional_diff_final_val.pdf")
 

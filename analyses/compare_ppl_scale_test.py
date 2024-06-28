@@ -45,7 +45,7 @@ def _ppl_correct_and_ppl_diff(PPL_A_and_B, labels):
 def ppl_distributional_diff():
     n_rows = 3
     n_cols = 2
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(10, 10))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(10, 8))
     axes = axes.flatten()
 
     model_pairs = []
@@ -84,7 +84,7 @@ def ppl_distributional_diff():
         axes[subplot_idx].set_title(f"{forwards_model_print_name}")
         axes[subplot_idx].spines['top'].set_visible(False)
         axes[subplot_idx].spines['right'].set_visible(False)
-        axes[subplot_idx].set_xlim([0, 170])
+        axes[subplot_idx].set_xlim([0, 200])
         axes[subplot_idx].set_ylim([0, 0.1])
         
         # T-test
@@ -112,7 +112,7 @@ def ppl_distributional_diff():
         axes[-2].set_xlabel("PPL correct")
         axes[-1].set_xlabel("PPL incorrect-correct")
 
-    plt.legend()
+    axes[0].legend() 
     plt.tight_layout()
     plt.savefig(f"{figs_dir}/ppl_distributional_diff_test.pdf")
 
