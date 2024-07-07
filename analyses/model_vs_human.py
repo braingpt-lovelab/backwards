@@ -192,17 +192,20 @@ def plot(use_human_abstract):
         plt.savefig(f"{base_fname}_llm_abstract.pdf")
 
     # Significance testing
-    # Compare two models within the same family
-    # by independent t-test using ppl_diff
+    # Compare forwards vs backwards models acc
+    fwd_models = []
+    bwd_models = []
     for family_index, llm_family in enumerate(llms.keys()):
         llm_names = list(llms[llm_family].keys())
         
-        llm_fwd_ppl_diff = llms[llm_family][llm_names[0]]["ppl_diff"]
-        llm_bwd_ppl_diff = llms[llm_family][llm_names[1]]["ppl_diff"]
+        llm_fwd_acc = llms[llm_family][llm_names[0]]["acc"]
+        llm_bwd_acc = llms[llm_family][llm_names[1]]["acc"]
+        fwd_models.append(llm_fwd_acc)
+        bwd_models.append(llm_bwd_acc)
 
-        t_stat, p_val = stats.ttest_ind(llm_fwd_ppl_diff, llm_bwd_ppl_diff)
-        dof = len(llm_fwd_ppl_diff) + len(llm_bwd_ppl_diff) - 2
-        print(f"{llms[llm_family][llm_names[0]]['llm']}, t({dof})={t_stat:.3f}, p={p_val:.3f}")
+    print(fwd_models, bwd_models)
+    t_stat, p_val = stats.ttest_rel(fwd_models, bwd_models)
+    print(f"t({len(fwd_models)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
 
 
 if __name__ == "__main__":
