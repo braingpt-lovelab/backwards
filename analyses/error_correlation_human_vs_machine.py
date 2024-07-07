@@ -226,6 +226,13 @@ def plot(who, avg_acc_dict_human):
     fig.tight_layout()
     plt.savefig(f"figs/error_correlation_{who}_created_all_llms_heatmap.pdf")
 
+    # Significance testing on forward vs backward models correlation to humans
+    # forwards models are odd indices, backwards models are even indices
+    fwds_vs_human = corr_all_models_and_human[-1, :-1][::2]
+    bwds_vs_human = corr_all_models_and_human[-1, :-1][1::2]
+    t_stat, p_val = stats.ttest_rel(fwds_vs_human, bwds_vs_human)
+    print(f"t({len(fwds_vs_human)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
+
 
 def main():
     who_created = ["human"]
