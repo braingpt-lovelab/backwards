@@ -214,9 +214,6 @@ def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
 
     # Load model trained from scratch from local checkpoint
     if model_fpath in [
-            "gpt2_scratch",
-            "finetune_gpt2",
-            "finetune_gpt2_lr2e-6",
             "gpt2_scratch_neuro_tokenizer",
             "gpt2_scratch_neuro_tokenizer_backwards",
             "gpt2-medium_scratch_neuro_tokenizer",
@@ -239,7 +236,6 @@ def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
         )
     
     # Load model untrained (config only)
-    # elif model_fpath == "gpt2_init":
     elif "init" in model_fpath:
         model_name = model_fpath.split("_")[0]
         print(f"Loading {model_name} model untrained")
