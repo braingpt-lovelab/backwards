@@ -235,6 +235,21 @@ def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
             model_fpath,    
         )
     
+    elif "seed" in model_fpath:
+        model_fpath = f"/home/ken/projects/backwards/model_training/exp/{model_fpath}/checkpoint.4"
+        print("Loading GPT2 model from", model_fpath)
+        model = transformers.GPT2LMHeadModel.from_pretrained(
+            model_fpath,
+            load_in_8bit=load_in_8bit,
+            device_map='auto',
+            trust_remote_code=True,
+            torch_dtype=torch_dtype
+        )
+
+        tokenizer = transformers.GPT2Tokenizer.from_pretrained(
+            model_fpath,    
+        )
+    
     # Load model untrained (config only)
     elif "init" in model_fpath:
         model_name = model_fpath.split("_")[0]
