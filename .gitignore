@@ -1,4 +1,6 @@
 model_training/wandb/
+model_training/exp/
+model_training/cache/
 
 **/.DS_Store
 
