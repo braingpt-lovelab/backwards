@@ -373,6 +373,12 @@ if __name__ == "__main__":
         help="Custom tokenizer path",
     )
     parser.add_argument(
+        "--random_seed",
+        type=int,
+        default=1,
+        help="Random seed",
+    )
+    parser.add_argument(
         "--wandb_project",
         type=str,
         default="brainlessgpt",
@@ -396,8 +402,8 @@ if __name__ == "__main__":
     )
 
     device = accelerator.device
-    random.seed(1)
-    torch.manual_seed(1)
+    random.seed(args.random_seed)
+    torch.manual_seed(args.random_seed)
 
     main(0, args, world_size)
     accelerator.end_training()
