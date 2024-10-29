@@ -137,8 +137,10 @@ if __name__ == "__main__":
 
     llms = [
         # "gpt2_scratch_neuro_tokenizer_backwards",
-        "gpt2-medium_scratch_neuro_tokenizer_backwards",
+        # "gpt2-medium_scratch_neuro_tokenizer_backwards",
         # "gpt2-large_scratch_neuro_tokenizer_backwards"
+        "gpt2_scratch_neuro_tokenizer_backwards_seed2",
+        "gpt2_scratch_neuro_tokenizer_backwards_seed3",
     ]
 
     for llm in llms:
