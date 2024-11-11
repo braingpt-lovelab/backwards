@@ -126,14 +126,14 @@ def main():
     ax2 = fig.add_subplot(gs[1, 0])
     ax2.pie([forwards_proportion, 1 - forwards_proportion], labels=["Neuro\nTokens", ""],
             autopct='%1.1f%%', startangle=90, explode=(0.1, 0.), colors=['cyan', 'skyblue'])
-    ax2.set_xlabel("Forwards\nVocab.", fontsize=16, fontweight='bold')
+    ax2.set_xlabel("Forward\nVocab.", fontsize=16, fontweight='bold')
     ax2.text(-2, 1.5, 'B', fontsize=16, fontweight='bold')
 
     # Bottom right - Backwards Vocab Pie Chart
     ax3 = fig.add_subplot(gs[1, 1])
     ax3.pie([backwards_proportion, 1 - backwards_proportion], labels=["Neuro\nTokens", ""],
             autopct='%1.1f%%', startangle=90, explode=(0.1, 0.), colors=['cyan', 'lightgreen'])
-    ax3.set_xlabel("Backwards\nVocab.", fontsize=16, fontweight='bold')
+    ax3.set_xlabel("Backward\nVocab.", fontsize=16, fontweight='bold')
     ax3.text(-2, 1.5, 'C', fontsize=16, fontweight='bold')
 
     plt.tight_layout()
