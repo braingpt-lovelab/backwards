@@ -138,7 +138,7 @@ model_list = {
             "hatch": "",
         },
         "gpt2_scratch_neuro_tokenizer_backwards": {
-            "llm": "GPT2-124M (backwards)",
+            "llm": "GPT2-124M (backward)",
             "color": '#758EB7',
             "alpha": 0.8,
             "hatch": "\\",
@@ -152,7 +152,7 @@ model_list = {
             "hatch": "",
         },
         "gpt2-medium_scratch_neuro_tokenizer_backwards": {
-            "llm": "GPT2-355M (backwards)",
+            "llm": "GPT2-355M (backward)",
             "color": '#6F5F90',
             "alpha": 0.8,
             "hatch": "\\",
@@ -166,7 +166,7 @@ model_list = {
             "hatch": "",
         },
         "gpt2-large_scratch_neuro_tokenizer_backwards": {
-            "llm": "GPT2-774M (backwards)",
+            "llm": "GPT2-774M (backward)",
             "color": '#8A5082',
             "alpha": 0.8,
             "hatch": "\\",
