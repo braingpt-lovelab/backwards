@@ -83,8 +83,8 @@ def ppl_distributional_diff():
             _load_ppl(forwards_model_fullname, backwards_model_fullname, "validation")
     
         subplot_idx = model_pair_idx * n_cols
-        sns.kdeplot(forwards_val_ppl, label="Forwards", ax=axes[subplot_idx], color="blue")
-        sns.kdeplot(backwards_val_ppl, label="Backwards", ax=axes[subplot_idx], color="brown")
+        sns.kdeplot(forwards_val_ppl, label="Forward", ax=axes[subplot_idx], color="blue")
+        sns.kdeplot(backwards_val_ppl, label="Backward", ax=axes[subplot_idx], color="brown")
         axes[subplot_idx].hist(forwards_val_ppl, bins=20, alpha=0.1, color="blue", density=True)
         axes[subplot_idx].hist(backwards_val_ppl, bins=20, alpha=0.1, color="brown", density=True)
         axes[subplot_idx].set_title(f"{forwards_model_print_name}")
@@ -108,8 +108,8 @@ def ppl_distributional_diff():
             _ppl_correct_and_ppl_diff(backwards_PPL_A_and_B, backwards_labels)
 
         subplot_idx = model_pair_idx * n_cols + 1
-        sns.kdeplot(forwards_PPL_correct, label="Forwards", ax=axes[subplot_idx], color="blue")
-        sns.kdeplot(backwards_PPL_correct, label="Backwards", ax=axes[subplot_idx], color="brown")
+        sns.kdeplot(forwards_PPL_correct, label="Forward", ax=axes[subplot_idx], color="blue")
+        sns.kdeplot(backwards_PPL_correct, label="Backward", ax=axes[subplot_idx], color="brown")
         axes[subplot_idx].hist(forwards_PPL_correct, bins=20, alpha=0.1, color="blue", density=True)
         axes[subplot_idx].hist(backwards_PPL_correct, bins=20, alpha=0.1, color="brown", density=True)
         axes[subplot_idx].set_title(f"{forwards_model_print_name}")
