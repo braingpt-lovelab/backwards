@@ -17,6 +17,7 @@ def get_llm_accuracies(model_results_dir, use_human_abstract=True):
     llms = {k: v for k, v in llms.items() if "gpt2" in k}
     for llm_family in llms.keys():
         for llm in llms[llm_family]:
+            print(f"Processing {llm_family}, {llm}")
             if use_human_abstract:
                 type_of_abstract = 'human_abstracts'
             else:
@@ -37,7 +38,50 @@ def get_llm_accuracies(model_results_dir, use_human_abstract=True):
             llms[llm_family][llm]["acc"] = acc
             llms[llm_family][llm]["sem"] = sem
             llms[llm_family][llm]["ppl_diff"] = ppl_diff
-            
+
+            # Collect data for logistic regression as part of statistical analysis
+            # X: `direction`, `model size` and `item`, each is an array.
+            # Y: correct/incorrect, which is an array.
+            # direction:
+            #   if `backward` in llm, add 1 to direction else 0
+            # model size:
+            #   if `124` in llm, add [0, 0] to model size
+            #   if `355` in llm, add [1, 0] to model size
+            #   if `774` in llm, add [0, 1] to model size
+            # item:
+            #   fixed for all llms, each item is one-hot (dropped 1) 
+            #   encoded with num_item dimensions, whose (i-1)th column is 1.
+            direction = []
+            model_size = []
+            item = []
+            for item_index in range(labels.shape[0]):
+                if "backward" in llm:
+                    direction.append([0])
+                else:
+                    direction.append([1])
+
+                # For model_size: drop 'small' as reference category
+                if "medium" in llm:
+                    model_size.append([1, 0])  # medium
+                elif "large" in llm:
+                    model_size.append([0, 1])  # large
+                else: # small
+                    model_size.append([0, 0])  # reference category
+
+                # For item: drop the first item (index 0) as reference
+                item_onehot = [0] * (len(labels) - 1)  # one fewer dimension
+                if item_index > 0:  # skip index 0 as it's reference
+                    item_onehot[item_index - 1] = 1
+                item.append(item_onehot)
+
+            llms[llm_family][llm]["direction"] = direction
+            llms[llm_family][llm]["model_size"] = model_size
+            llms[llm_family][llm]["item"] = item
+
+            correctness = np.argmin(PPL_A_and_B, axis=1) == labels
+            correctness = [int(c) for c in correctness]
+            llms[llm_family][llm]["correct"] = correctness
+
     return llms
 
 
@@ -191,8 +235,8 @@ def plot(use_human_abstract):
     else:
         plt.savefig(f"{base_fname}_llm_abstract.pdf")
 
-    # Significance testing
-    # Compare forwards vs backwards models acc
+    # Significance testing 
+    # 1. Compare forwards vs backwards models acc
     fwd_models = []
     bwd_models = []
     for family_index, llm_family in enumerate(llms.keys()):
@@ -206,6 +250,45 @@ def plot(use_human_abstract):
     print(fwd_models, bwd_models)
     t_stat, p_val = stats.ttest_rel(fwd_models, bwd_models)
     print(f"t({len(fwd_models)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
+
+    # 2. Logistic regression
+    # X: `direction`, `model size` and `item`, each is an array.
+    # Y: correct/incorrect, which is an array.
+    X = []
+    Y = []
+    for family_index, llm_family in enumerate(llms.keys()):
+        for llm in llms[llm_family]:
+            num_items = len(llms[llm_family][llm]["correct"])
+            for item_index in range(num_items):
+                X.append(
+                    llms[llm_family][llm]["direction"][item_index] +
+                    llms[llm_family][llm]["model_size"][item_index] + 
+                    llms[llm_family][llm]["item"][item_index]
+                )
+                Y.append(llms[llm_family][llm]["correct"][item_index])
+    
+    X = np.array(X)
+    Y = np.array(Y)  
+    print(X.shape, Y.shape)
+
+    import statsmodels.api as sm
+    # Add column names
+    X = sm.add_constant(X)
+
+    column_names = ["const", "direction", "model_size_medium", "model_size_large"] \
+                 + [f"item_{i}" for i in range(num_items-1)]
+    X = pd.DataFrame(X, columns=column_names)
+    shuffle_indices = np.random.choice(len(Y), len(Y), replace=False)
+    X = X.iloc[shuffle_indices]
+    Y = Y[shuffle_indices]
+
+    print(f"accuracy: {Y.mean()}")
+
+    # Fit a logistic regression model
+    X = sm.add_constant(X)
+    model = sm.Logit(Y, X)
+    result = model.fit()
+    print(result.summary())
 
 
 if __name__ == "__main__":
