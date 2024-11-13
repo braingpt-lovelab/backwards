@@ -15,8 +15,11 @@ def get_llm_accuracies(model_results_dir, use_human_abstract=True):
     # Remove all keys except "gpt2"
     # To plot only the GPT-2 family models.
     llms = {k: v for k, v in llms.items() if "gpt2" in k}
-    for llm_family in llms.keys():
-        for llm in llms[llm_family]:
+
+    all_data = []  # export as csv for R analysis
+
+    for i, llm_family in enumerate(llms.keys()):
+        for j, llm in enumerate(llms[llm_family]):
             print(f"Processing {llm_family}, {llm}")
             if use_human_abstract:
                 type_of_abstract = 'human_abstracts'
@@ -38,6 +41,25 @@ def get_llm_accuracies(model_results_dir, use_human_abstract=True):
             llms[llm_family][llm]["acc"] = acc
             llms[llm_family][llm]["sem"] = sem
             llms[llm_family][llm]["ppl_diff"] = ppl_diff
+
+            # Process each item
+            for item_index in range(labels.shape[0]):
+                # Create a data point for this item
+                data_point = {
+                    'model_id': i * len(llms[llm_family]) + j + 1,
+                    'direction': 0 if "backward" in llm else 1,
+                    'model_size': 2 if "medium" in llm else (3 if "large" in llm else 1),
+                    'item': item_index,
+                    'correct': int(np.argmin(PPL_A_and_B[item_index]) == labels[item_index])
+                }
+                all_data.append(data_point)
+    
+    # Convert to DataFrame
+    df = pd.DataFrame(all_data)
+    
+    # Save the data for R analysis
+    df.to_csv("model_performance_x_direction_x_size_x_item.csv", index=False)
+    print("Data saved as model_performance_x_direction_x_size_x_item.csv")
 
     return llms
 
@@ -113,6 +135,7 @@ def plot(use_human_abstract):
     # llms
     all_llm_accuracies = []
     all_llm_sems = []
+    all_llm_ppl_diffs = []
     all_llm_names = []
     all_llm_colors = []
     all_llm_hatches = []
@@ -123,6 +146,7 @@ def plot(use_human_abstract):
         for llm in llms[llm_family]:
             all_llm_accuracies.append(llms[llm_family][llm]["acc"])
             all_llm_sems.append(llms[llm_family][llm]["sem"])
+            all_llm_ppl_diffs.append(llms[llm_family][llm]["ppl_diff"])
             all_llm_names.append(llms[llm_family][llm]["llm"])
             all_llm_colors.append(llms[llm_family][llm]["color"])
             all_llm_hatches.append(llms[llm_family][llm]["hatch"])
@@ -191,7 +215,7 @@ def plot(use_human_abstract):
         plt.savefig(f"{base_fname}_llm_abstract.pdf")
 
     # Significance testing 
-    # - Compare forwards vs backwards models acc
+    # 1. Compare forwards vs backwards models acc
     fwd_models = []
     bwd_models = []
     for family_index, llm_family in enumerate(llms.keys()):
@@ -205,7 +229,9 @@ def plot(use_human_abstract):
     print(fwd_models, bwd_models)
     t_stat, p_val = stats.ttest_rel(fwd_models, bwd_models)
     print(f"t({len(fwd_models)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
-    
+
+    # 2. Repeated AVONA for model size and training direction
+    # Done in `anova_stats.R`
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
