@@ -230,6 +230,16 @@ def plot(who, avg_acc_dict_human):
     # forwards models are odd indices, backwards models are even indices
     fwds_vs_human = corr_all_models_and_human[-1, :-1][::2]
     bwds_vs_human = corr_all_models_and_human[-1, :-1][1::2]
+    avg_corr_fwds = np.mean(fwds_vs_human)
+    avg_corr_bwds = np.mean(bwds_vs_human)
+    std_corr_fwds = np.std(fwds_vs_human)
+    std_corr_bwds = np.std(bwds_vs_human)
+
+    print(f"\nAverage correlation forwards: {avg_corr_fwds:.2f}")
+    print(f"Std correlation forwards: {std_corr_fwds:.2f}")
+    print(f"Average correlation backwards: {avg_corr_bwds:.2f}")
+    print(f"Std correlation backwards: {std_corr_bwds:.2f}")
+
     t_stat, p_val = stats.ttest_rel(fwds_vs_human, bwds_vs_human)
     print(f"t({len(fwds_vs_human)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
 
