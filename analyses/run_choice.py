@@ -133,14 +133,9 @@ if __name__ == "__main__":
         use_human_abstract = False
 
     llms = [
-        # "gpt2_scratch_neuro_tokenizer",
-        # "gpt2_scratch_neuro_tokenizer_backwards",
-        # "gpt2-medium_scratch_neuro_tokenizer",
-        # "gpt2-medium_scratch_neuro_tokenizer_backwards",
-        # "gpt2-large_scratch_neuro_tokenizer",
-        # "gpt2-large_scratch_neuro_tokenizer_backwards"
-        "gpt2_scratch_neuro_tokenizer_seed2",
-        "gpt2_scratch_neuro_tokenizer_seed3",
+        "gpt2_scratch_neuro_tokenizer",
+        "gpt2-medium_scratch_neuro_tokenizer",
+        "gpt2-large_scratch_neuro_tokenizer",
     ]
 
     for llm in llms:
