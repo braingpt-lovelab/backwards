@@ -1,5 +1,11 @@
 # Beyond Human-Like Processing: Large Language Models Perform Equivalently on Forward and Backward Scientific Text
-![image](https://github.com/user-attachments/assets/090584ca-12c4-44e4-aa48-d97b510e7fab)
+
+<div style="display: flex; justify-content: center; align-items: center;">
+    <img src="https://github.com/user-attachments/assets/090584ca-12c4-44e4-aa48-d97b510e7fab" style="height: 300px; width: auto; margin-right: 10px;">
+    <img src="https://github.com/user-attachments/assets/598edb45-8f9c-419d-95f3-4e2ade596299" style="height: 300px; width: auto;">
+</div>
+
+
 
 ### Work with this repo locally:
 ```
