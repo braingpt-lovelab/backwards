@@ -156,7 +156,8 @@ def plot(use_human_abstract):
             all_llm_xticks.append(family_index + len(all_llm_xticks))
     
     print(all_llm_xticks)
-
+    print(all_llm_accuracies)
+    
     # Bar
     for i in range(len(all_llm_xticks)):
         ax.bar(
