@@ -15,6 +15,12 @@ model_list = {
             "alpha": 0.8,
             "hatch": "\\",
         },
+        "gpt2_scratch_neuro_tokenizer_fwdModel_bwdText": {
+            "llm": "GPT2-124M (fmbt)",
+            "color": '#758EB7',
+            "alpha": 0.8,
+            "hatch": "/",
+        },
     },
     "gpt2-medium": {
         "gpt2-medium_scratch_neuro_tokenizer": {
@@ -29,6 +35,12 @@ model_list = {
             "alpha": 0.8,
             "hatch": "\\",
         },
+        "gpt2-medium_scratch_neuro_tokenizer_fwdModel_bwdText": {
+            "llm": "GPT2-355M (fmbt)",
+            "color": '#6F5F90',
+            "alpha": 0.8,
+            "hatch": "/",
+        },
     },
     "gpt2-large": {
         "gpt2-large_scratch_neuro_tokenizer": {
@@ -42,6 +54,12 @@ model_list = {
             "color": '#8A5082',
             "alpha": 0.8,
             "hatch": "\\",
+        },
+        "gpt2-large_scratch_neuro_tokenizer_fwdModel_bwdText": {
+            "llm": "GPT2-774M (fmbt)",
+            "color": '#8A5082',
+            "alpha": 0.8,
+            "hatch": "/",
         },
     }
 }
@@ -62,10 +80,13 @@ def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
     if model_fpath in [
             "gpt2_scratch_neuro_tokenizer",
             "gpt2_scratch_neuro_tokenizer_backwards",
+            "gpt2_scratch_neuro_tokenizer_fwdModel_bwdText",
             "gpt2-medium_scratch_neuro_tokenizer",
             "gpt2-medium_scratch_neuro_tokenizer_backwards",
+            "gpt2-medium_scratch_neuro_tokenizer_fwdModel_bwdText",
             "gpt2-large_scratch_neuro_tokenizer",
             "gpt2-large_scratch_neuro_tokenizer_backwards",
+            "gpt2-large_scratch_neuro_tokenizer_fwdModel_bwdText",
         ]:
         model_fpath = f"/home/ken/projects/matching_experts/model_training/exp/{model_fpath}/checkpoint.4"
         print("Loading GPT2 model from", model_fpath)
