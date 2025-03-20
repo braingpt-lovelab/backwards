@@ -38,41 +38,22 @@ def logging(s, logfile, logging_=True, log_=True):
             f_log.write(s + '\n')
 
 
-def tokenize(element, tokenizer, args):
-    outputs = tokenizer(
-        element["text"],
-        truncation=True,
-        max_length=args.chunk_size,
-        return_overflowing_tokens=True,
-        return_length=True,
-    )
-    
-    output_ids = list(itertools.chain(*outputs["input_ids"]))
-    output_mask = list(itertools.chain(*outputs["attention_mask"]))
-    
-    # Split into chunks:
-    output_ids = [output_ids[x:x+args.chunk_size-1] for x in range(0, len(output_ids), args.chunk_size-1)]
-    output_mask = [output_mask[x:x+args.chunk_size-1] for x in range(0, len(output_mask), args.chunk_size-1)]
-    
-    # Prepend BOS token to each chunk regardless of training direction;
-    # if reversed training, first reverse and then prepend BOS
-    if args.reversed_training:
-        print("Reversing chunk...")
-        output_ids = [chunk[::-1] for chunk in output_ids]
-        output_mask = [chunk[::-1] for chunk in output_mask]
-    bos_id = tokenizer.bos_token_id
-    output_ids = [[bos_id] + chunk for chunk in output_ids]
-    output_mask = [[1] + chunk for chunk in output_mask]
-    
-    return {"input_ids": output_ids, "attention_mask": output_mask}
-
-
 def collate_fn(batch):
     input_ids = [sample["input_ids"] for sample in batch]
     attention_masks = [sample["attention_mask"] for sample in batch]
-    labels = pad_sequence(input_ids, batch_first=True, padding_value=-1)
-    input_ids = pad_sequence(input_ids, batch_first=True, padding_value=0)
-    attention_masks = pad_sequence(attention_masks, batch_first=True, padding_value=0)
+    labels = input_ids
+
+    # Convert to tensor
+    input_ids = torch.tensor(input_ids)
+    attention_masks = torch.tensor(attention_masks)
+    labels = torch.tensor(labels)
+
+    # No need to pad anything; handled by `caching_tokenized_dataset.py`
+    # If got error means we made a mistake somehow...
+    # labels = pad_sequence(input_ids, batch_first=True, padding_value=-1)
+    # input_ids = pad_sequence(input_ids, batch_first=True, padding_value=0)
+    # attention_masks = pad_sequence(attention_masks, batch_first=True, padding_value=0)
+    
     return {
         "input_ids": input_ids,
         "attention_mask": attention_masks, 
@@ -106,13 +87,12 @@ def main(rank, args, world_size):
 
     tokenized_dataset = {
         "train": datasets.Dataset.load_from_disk(args.cache_dir_train),
-        "validation": datasets.Dataset.load_from_disk(args.cache_dir_validation)
+        "validation": datasets.Dataset.load_from_disk(args.cache_dir_validation),
     }
 
     print(tokenized_dataset)
     logging("Loading {} samples for training".format(len(tokenized_dataset["train"])), args.logfile)
     logging("Loading {} samples for validation".format(len(tokenized_dataset["validation"])), args.logfile)
-    tokenized_dataset.set_format("torch")
 
     train_dataloader = DataLoader(
         tokenized_dataset["train"],

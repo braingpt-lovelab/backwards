@@ -1,3 +1,4 @@
+import itertools
 from types import SimpleNamespace
 import os
 import datasets
@@ -5,7 +6,34 @@ from datasets import load_dataset
 from transformers import AutoTokenizer
 
 import utils
-from train_bayes import tokenize
+
+
+def tokenize(element, tokenizer, args):
+    outputs = tokenizer(
+        element["text"],
+        truncation=True,
+        max_length=args.chunk_size,
+        return_overflowing_tokens=True,
+        return_length=True,
+    )
+    
+    output_ids = list(itertools.chain(*outputs["input_ids"]))
+    output_mask = list(itertools.chain(*outputs["attention_mask"]))
+    
+    # Split into chunks:
+    output_ids = [output_ids[x:x+args.chunk_size-1] for x in range(0, len(output_ids), args.chunk_size-1)]
+    output_mask = [output_mask[x:x+args.chunk_size-1] for x in range(0, len(output_mask), args.chunk_size-1)]
+
+    # Prepend BOS token to each chunk regardless of training direction;
+    # if reversed training, first reverse and then prepend BOS
+    if args.reversed_training:
+        print("Reversing chunk...")
+        output_ids = [chunk[::-1] for chunk in output_ids]
+        output_mask = [chunk[::-1] for chunk in output_mask]
+    bos_id = tokenizer.bos_token_id
+    output_ids = [[bos_id] + chunk for chunk in output_ids]
+    output_mask = [[1] + chunk for chunk in output_mask]
+    return {"input_ids": output_ids, "attention_mask": output_mask}
 
 
 def first_map_then_remove_last(config_fpath):
@@ -91,7 +119,7 @@ def load_from_arrow_dir(config_fpath):
 
 
 if __name__ == "__main__":
-    config_fpath = "configs/gpt2_scratch_neuro_tokenizer_bayes_fwd.json"  ### _fwd | _rev
+    config_fpath = "configs/gpt2_scratch_neuro_tokenizer_bayes_fwd_mini.json"  ### _fwd | _rev
     tokenized_dataset, tokenizer = first_map_then_remove_last(config_fpath)  ### Use once!
     # tokenized_dataset, tokenizer = load_from_arrow_dir(config_fpath)  ### comment out ONLY dir exists.
 
