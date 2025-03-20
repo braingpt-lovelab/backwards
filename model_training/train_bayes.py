@@ -96,9 +96,6 @@ def main(rank, args, world_size):
     with open(os.path.join(args.outputdir, 'model_config.json'), 'w') as f:
         json.dump(args.__dict__, f, indent=2)
 
-    # Load huggingface dataset
-    dataset = load_dataset(args.data_path, cache_dir=args.cache_dir)
-
     # Load tokenizer
     if args.custom_tokenizer != "None":
         print(f"Load custom tokenizer from {args.custom_tokenizer}")
@@ -107,17 +104,12 @@ def main(rank, args, world_size):
         print(f"Load pretrained tokenizer")
         tokenizer = AutoTokenizer.from_pretrained(args.model_path, cache_dir=args.cache_dir)
 
-    tokenized_dataset = dataset.map(
-        tokenize,
-        fn_kwargs={"tokenizer": tokenizer, "args": args},
-        batched=True,
-        remove_columns=dataset["train"].column_names,
-        batch_size=None,  # Load entire dataset at once to handle overflow.
-    )
+    tokenized_dataset = {
+        "train": datasets.Dataset.load_from_disk(args.cache_dir_train),
+        "validation": datasets.Dataset.load_from_disk(args.cache_dir_validation)
+    }
 
-    # Remove the last entry which is the only overflow sequence
-    tokenized_dataset["train"] = datasets.Dataset.from_dict(tokenized_dataset["train"][:-1])
-    tokenized_dataset["validation"] = datasets.Dataset.from_dict(tokenized_dataset["validation"][:-1])
+    print(tokenized_dataset)
     logging("Loading {} samples for training".format(len(tokenized_dataset["train"])), args.logfile)
     logging("Loading {} samples for validation".format(len(tokenized_dataset["validation"])), args.logfile)
     tokenized_dataset.set_format("torch")
@@ -445,6 +437,18 @@ if __name__ == "__main__":
         type=utils.str_to_bool,
         default=False,
         help="Reverse the training sequence",
+    )
+    parser.add_argument(
+        "--cache_dir_train",
+        type=str,
+        default=None,
+        help="Path to the training cache directory",
+    )
+    parser.add_argument(
+        "--cache_dir_validation",
+        type=str,
+        default=None,
+        help="Path to the validation cache directory",
     )
     args = parser.parse_args()
     world_size = torch.cuda.device_count()

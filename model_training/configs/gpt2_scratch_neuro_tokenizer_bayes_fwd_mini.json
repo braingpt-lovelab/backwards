@@ -1,6 +1,6 @@
 {
     "model_path": "gpt2",
-    "data_path": "BrainGPT/train_valid_split_pmc_neuroscience_2002-2022_filtered_subset",
+    "data_path": "BrainGPT/train_valid_split_pmc_neuroscience_2002-2022_filtered_subset_mini",
     "cache_dir": "cache",
     "batch_size": 16,
     "chunk_size": 1024,
@@ -21,6 +21,6 @@
     "wandb_project": "brainlessgpt",
     "wandb_entity": "kenotron",
     "reversed_training": false,
-    "cache_dir_train": "cache/neuroscience_bayes_fwd_train.arrow",
-    "cache_dir_validation": "cache/neuroscience_bayes_fwd_validation.arrow"
+    "cache_dir_train": "cache/neuroscience_bayes_fwd_train_mini.arrow",
+    "cache_dir_validation": "cache/neuroscience_bayes_fwd_validation_mini.arrow"
 }

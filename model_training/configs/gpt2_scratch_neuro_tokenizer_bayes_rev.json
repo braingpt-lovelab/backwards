@@ -20,5 +20,7 @@
     "custom_tokenizer": "cache/gpt2_neuro_tokenizer",
     "wandb_project": "brainlessgpt",
     "wandb_entity": "kenotron",
-    "reversed_training": true
+    "reversed_training": true,
+    "cache_dir_train": "cache/neuroscience_bayes_rev_train.arrow",
+    "cache_dir_validation": "cache/neuroscience_bayes_rev_validation.arrow"
 }
