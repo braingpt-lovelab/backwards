@@ -280,6 +280,10 @@ def main(rank, args, world_size):
 
                 logging(f"LLM.module.transformer.wte.weight[:5]: {LLM.module.transformer.wte.weight[:5]}", args.logfile)
                 logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg'][:5]}", args.logfile)
+                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg_sq'][:5]}", args.logfile)
+                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['step']}", args.logfile)
+                logging(f"lr: {lr_scheduler.get_last_lr()}", args.logfile)
+                logging(f"scheduler_last_epoch: {lr_scheduler.state_dict()['last_epoch']}", args.logfile)
 
             if (i + 1) % args.log_interval == 0 and accelerator.is_main_process:
                 elasped_time = time.time() - start
@@ -308,7 +312,7 @@ def main(rank, args, world_size):
 
                         if val_loss < best_val_loss:
                             best_val_loss = val_loss
-                            save_checkpoint(LLM, tokenizer, epoch, step, num_steps_per_epoch)
+                            save_checkpoint(LLM, tokenizer, epoch, step)
                 LLM.train()
        
         # Evaluate again at the end of epoch
