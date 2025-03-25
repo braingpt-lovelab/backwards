@@ -236,9 +236,6 @@ def main(rank, args, world_size):
     LLM.train()
     early_stop_flag = False
     for epoch in range(start_epoch, args.num_train_epochs):
-        if not args.resume_from_checkpoint:
-            torch.manual_seed(args.random_seed + epoch)
-
         if early_stop_flag:
             break
 
@@ -249,7 +246,7 @@ def main(rank, args, world_size):
             # if epoch == 0 and i == 400:
             #     early_stop_flag = True
             #     break
-            if epoch == 0 and i == 900:
+            if epoch == 1 and i == 900:
                 early_stop_flag = True
                 break
 
