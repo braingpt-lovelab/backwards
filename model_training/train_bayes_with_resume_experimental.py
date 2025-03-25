@@ -145,11 +145,20 @@ def main(rank, args, world_size):
     logging("Loading {} samples for training".format(len(tokenized_dataset["train"])), args.logfile)
     logging("Loading {} samples for validation".format(len(tokenized_dataset["validation"])), args.logfile)
 
+    # train_dataloader = DataLoader(
+    #     tokenized_dataset["train"],
+    #     batch_size=args.batch_size,
+    #     collate_fn=collate_fn,
+    #     shuffle=True,
+    # )
+    train_generator = torch.Generator()
+    train_generator.manual_seed(args.random_seed)
     train_dataloader = DataLoader(
         tokenized_dataset["train"],
         batch_size=args.batch_size,
         collate_fn=collate_fn,
         shuffle=True,
+        generator=train_generator,
     )
 
     valid_dataloader = DataLoader(
@@ -167,11 +176,11 @@ def main(rank, args, world_size):
             model_config.vocab_size = tokenizer.vocab_size
 
 
-        # DEBUG: disable all dropout
-        model_config.attn_pdrop = 0
-        model_config.resid_pdrop = 0
-        model_config.embd_pdrop = 0
-        model_config.summary_first_dropout = 0
+        # # DEBUG: disable all dropout
+        # model_config.attn_pdrop = 0
+        # model_config.resid_pdrop = 0
+        # model_config.embd_pdrop = 0
+        # model_config.summary_first_dropout = 0
 
         LLM = AutoModelForCausalLM.from_config(model_config)
         print(LLM)
@@ -227,7 +236,9 @@ def main(rank, args, world_size):
     LLM.train()
     early_stop_flag = False
     for epoch in range(start_epoch, args.num_train_epochs):
-        torch.manual_seed(args.random_seed + epoch)
+        if not args.resume_from_checkpoint:
+            torch.manual_seed(args.random_seed + epoch)
+
         if early_stop_flag:
             break
 
@@ -235,12 +246,12 @@ def main(rank, args, world_size):
         optimizer.zero_grad()
         for i, batch in enumerate(train_dataloader):
             # Adhoc distruption for debugging
-            if epoch == 0 and i == 400:
-                early_stop_flag = True
-                break
-            # if epoch == 0 and i == 900:
+            # if epoch == 0 and i == 400:
             #     early_stop_flag = True
             #     break
+            if epoch == 0 and i == 900:
+                early_stop_flag = True
+                break
 
             step = (epoch * num_steps_per_epoch) + i
 
