@@ -242,15 +242,6 @@ def main(rank, args, world_size):
             logging(f"\n\nRunning epoch {epoch}, step {step}, batch {i}", args.logfile)
             logging(f"Sampled inputs[:2]: {batch['input_ids'][:2]}", args.logfile)
 
-            if step == 320:
-                logging(f"\nrank {accelerator.process_index} | epoch {epoch} | step {step} | batch {i}", args.logfile)
-                logging("Step 320, before update, should be same as saved 319?", args.logfile)
-                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg'][:5]}", args.logfile)
-                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg_sq'][:5]}", args.logfile)
-                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['step']}", args.logfile)
-                logging(f"lr: {lr_scheduler.get_last_lr()}", args.logfile)
-                logging(f"scheduler_last_epoch: {lr_scheduler.state_dict()['last_epoch']}", args.logfile)
-
             if step < start_step:
                 logging(f"Skip epoch {epoch}, step {step}, batch {i}", args.logfile)
                 continue
