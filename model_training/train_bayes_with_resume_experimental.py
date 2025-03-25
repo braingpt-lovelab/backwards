@@ -122,7 +122,7 @@ def save_checkpoint(LLM, tokenizer, epoch, step, end_of_epoch=False):
 
 
 def main(rank, args, world_size):
-    print(f"rank: {rank}")
+    print(f"\nrank: {accelerator.process_index}")
 
     # Save model configuration
     with open(os.path.join(args.outputdir, 'model_config.json'), 'w') as f:
@@ -145,12 +145,6 @@ def main(rank, args, world_size):
     logging("Loading {} samples for training".format(len(tokenized_dataset["train"])), args.logfile)
     logging("Loading {} samples for validation".format(len(tokenized_dataset["validation"])), args.logfile)
 
-    # train_dataloader = DataLoader(
-    #     tokenized_dataset["train"],
-    #     batch_size=args.batch_size,
-    #     collate_fn=collate_fn,
-    #     shuffle=True,
-    # )
     train_generator = torch.Generator()
     train_generator.manual_seed(args.random_seed)
     train_dataloader = DataLoader(
@@ -173,17 +167,9 @@ def main(rank, args, world_size):
         model_config = AutoConfig.from_pretrained(args.model_path)
         # Update vocab size if using custom tokenizer
         if args.custom_tokenizer != "None":
-            model_config.vocab_size = tokenizer.vocab_size
-
-
-        # # DEBUG: disable all dropout
-        # model_config.attn_pdrop = 0
-        # model_config.resid_pdrop = 0
-        # model_config.embd_pdrop = 0
-        # model_config.summary_first_dropout = 0
-
+            model_config.vocab_size = tokenizer.vocab_size 
         LLM = AutoModelForCausalLM.from_config(model_config)
-        print(LLM)
+
     elif args.train_mode == "finetune":
         print(f"Finetune from {args.model_path}")
         LLM = AutoModelForCausalLM.from_pretrained(args.model_path, cache_dir=args.cache_dir)
@@ -243,22 +229,21 @@ def main(rank, args, world_size):
         optimizer.zero_grad()
         for i, batch in enumerate(train_dataloader):
             # Adhoc distruption for debugging
-            # if epoch == 0 and i == 400:
+            # if epoch == 0 and i == 100:
             #     early_stop_flag = True
             #     break
-            if epoch == 1 and i == 900:
+            if epoch == 0 and i == 260:
                 early_stop_flag = True
                 break
 
             step = (epoch * num_steps_per_epoch) + i
 
+            logging(f"\nrank {accelerator.process_index} | epoch {epoch} | step {step} | batch {i}", args.logfile)
             logging(f"\n\nRunning epoch {epoch}, step {step}, batch {i}", args.logfile)
             logging(f"Sampled inputs[:2]: {batch['input_ids'][:2]}", args.logfile)
 
             if step == 320:
-                # (ken) confirmed, resumed 319 model has the same opt states
-                # as the non-stopped 319 (updated) model.
-                # TODO: difference might be in the model, ie dropout?
+                logging(f"\nrank {accelerator.process_index} | epoch {epoch} | step {step} | batch {i}", args.logfile)
                 logging("Step 320, before update, should be same as saved 319?", args.logfile)
                 logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg'][:5]}", args.logfile)
                 logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg_sq'][:5]}", args.logfile)
@@ -300,26 +285,14 @@ def main(rank, args, world_size):
             loss = loss / args.gradient_accumulation_steps
             accelerator.backward(loss)
 
-            # Plot example gradients of the first layer
-            for name, param in LLM.module.transformer.wte.named_parameters():
-                if name == "weight":
-                    logging(f"LLM.module.transformer.wte.weight[:5] grads: {param.grad.data[:5]}", args.logfile)
             # Plot loss
-            logging(f"Loss: {loss.item()}", args.logfile)
+            logging(f"\nrank: {accelerator.process_index}, Loss: {loss.item()}", args.logfile)
 
             if (i + 1) % args.gradient_accumulation_steps == 0:
                 logging(f"Graident accumulation at epoch {epoch}, step {step}, batch {i}", args.logfile)
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
-
-                logging("Updated and will save.", args.logfile)
-                logging(f"LLM.module.transformer.wte.weight[:5]: {LLM.module.transformer.wte.weight[:5]}", args.logfile)
-                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg'][:5]}", args.logfile)
-                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg_sq'][:5]}", args.logfile)
-                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['step']}", args.logfile)
-                logging(f"lr: {lr_scheduler.get_last_lr()}", args.logfile)
-                logging(f"scheduler_last_epoch: {lr_scheduler.state_dict()['last_epoch']}", args.logfile)
 
             if (i + 1) % args.log_interval == 0 and accelerator.is_main_process:
                 elasped_time = time.time() - start
@@ -567,24 +540,41 @@ if __name__ == "__main__":
     world_size = torch.cuda.device_count()
     print(world_size)
 
-    # Handle WandB run ID for resuming
-    wandb_run_id_path = os.path.join(
-        args.outputdir, 'wandb_run_id.txt'
-    )
-    if os.path.isfile(wandb_run_id_path):
-        # Resuming existing run
+    accelerator = Accelerator(log_with="wandb")
+
+    # Handle WandB run ID for resuming, synchronized across processes
+    wandb_run_id_path = os.path.join(args.outputdir, 'wandb_run_id.txt')
+    
+    if accelerator.is_main_process:
+        if args.resume_from_checkpoint and os.path.isfile(wandb_run_id_path):
+            # Explicit resumption requested and run ID file exists
+            with open(wandb_run_id_path, 'r') as f:
+                run_id = f.read().strip()
+            resume_mode = "must"
+            logging(f"Resuming WandB run with ID: {run_id}", args.logfile)
+        else:
+            # Fresh run: generate a new run ID, even if the file exists
+            run_id = wandb.util.generate_id()
+            os.makedirs(args.outputdir, exist_ok=True)
+            with open(wandb_run_id_path, 'w') as f:
+                f.write(run_id)
+            resume_mode = "allow"
+            if os.path.isfile(wandb_run_id_path) and not args.resume_from_checkpoint:
+                logging(f"Starting fresh run with new ID: {run_id} (ignoring existing wandb_run_id.txt)", args.logfile)
+            else:
+                logging(f"Starting fresh run with new ID: {run_id}", args.logfile)
+    else:
+        # Non-main processes wait for the main process to create the file
+        while not os.path.isfile(wandb_run_id_path):
+            time.sleep(1)  # Wait until the file exists
         with open(wandb_run_id_path, 'r') as f:
             run_id = f.read().strip()
-        resume_mode = "must"
-    else:
-        # New run
-        run_id = wandb.util.generate_id()
-        os.makedirs(args.outputdir, exist_ok=True)
-        with open(wandb_run_id_path, 'w') as f:
-            f.write(run_id)
-        resume_mode = "allow"
+        resume_mode = "must" if args.resume_from_checkpoint else "allow"
 
-    accelerator = Accelerator(log_with="wandb")
+    # Synchronize all processes to ensure they have the same run_id
+    accelerator.wait_for_everyone()
+
+    # Initialize WandB
     accelerator.init_trackers(
         project_name=args.wandb_project,
         init_kwargs={
