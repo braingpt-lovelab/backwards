@@ -105,7 +105,7 @@ def save_checkpoint(LLM, tokenizer, epoch, step, end_of_epoch=False):
             args.outputdir, f"checkpoint.{epoch}_{step}"
         )
         os.makedirs(ckpt_dir, exist_ok=True)
-        accelerator.save_state(ckpt_dir)
+        c
         logging(f"Checkpoint saved to {ckpt_dir}, AFTER epoch {epoch}, step {step}", args.logfile)
     else:
         # If end of epoch (which is not nec the exact end of an update)
@@ -145,21 +145,21 @@ def main(rank, args, world_size):
     logging("Loading {} samples for training".format(len(tokenized_dataset["train"])), args.logfile)
     logging("Loading {} samples for validation".format(len(tokenized_dataset["validation"])), args.logfile)
 
-    # train_dataloader = DataLoader(
-    #     tokenized_dataset["train"],
-    #     batch_size=args.batch_size,
-    #     collate_fn=collate_fn,
-    #     shuffle=True,
-    # )
-    train_generator = torch.Generator()
-    train_generator.manual_seed(args.random_seed)
     train_dataloader = DataLoader(
         tokenized_dataset["train"],
         batch_size=args.batch_size,
         collate_fn=collate_fn,
         shuffle=True,
-        generator=train_generator,
     )
+    # train_generator = torch.Generator()
+    # train_generator.manual_seed(args.random_seed)
+    # train_dataloader = DataLoader(
+    #     tokenized_dataset["train"],
+    #     batch_size=args.batch_size,
+    #     collate_fn=collate_fn,
+    #     shuffle=True,
+    #     generator=train_generator,
+    # )
 
     valid_dataloader = DataLoader(
         tokenized_dataset["validation"],
