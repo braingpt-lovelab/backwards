@@ -165,7 +165,16 @@ def main(rank, args, world_size):
         # Update vocab size if using custom tokenizer
         if args.custom_tokenizer != "None":
             model_config.vocab_size = tokenizer.vocab_size
+
+
+        # DEBUG: disable all dropout
+        model_config.attn_pdrop = 0
+        model_config.resid_pdrop = 0
+        model_config.embd_pdrop = 0
+        model_config.summary_first_dropout = 0
+
         LLM = AutoModelForCausalLM.from_config(model_config)
+        print(LLM)
     elif args.train_mode == "finetune":
         print(f"Finetune from {args.model_path}")
         LLM = AutoModelForCausalLM.from_pretrained(args.model_path, cache_dir=args.cache_dir)
@@ -189,7 +198,6 @@ def main(rank, args, world_size):
             "weight_decay": 0.0,
         },
     ]
-    # optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate)
     optimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr=args.learning_rate)
 
     # Scheduler and math around the number of training steps.
@@ -216,6 +224,7 @@ def main(rank, args, world_size):
     
     logging("Start training", args.logfile)
     # Training loop
+    LLM.train()
     early_stop_flag = False
     for epoch in range(start_epoch, args.num_train_epochs):
         torch.manual_seed(args.random_seed + epoch)
@@ -226,9 +235,9 @@ def main(rank, args, world_size):
         optimizer.zero_grad()
         for i, batch in enumerate(train_dataloader):
             # Adhoc distruption for debugging
-            # if epoch == 0 and i == 400:
-            #     early_stop_flag = True
-            #     break
+            if epoch == 0 and i == 400:
+                early_stop_flag = True
+                break
             # if epoch == 0 and i == 900:
             #     early_stop_flag = True
             #     break
@@ -237,6 +246,17 @@ def main(rank, args, world_size):
 
             logging(f"\n\nRunning epoch {epoch}, step {step}, batch {i}", args.logfile)
             logging(f"Sampled inputs[:2]: {batch['input_ids'][:2]}", args.logfile)
+
+            if step == 320:
+                # (ken) confirmed, resumed 319 model has the same opt states
+                # as the non-stopped 319 (updated) model.
+                # TODO: difference might be in the model, ie dropout?
+                logging("Step 320, before update, should be same as saved 319?", args.logfile)
+                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg'][:5]}", args.logfile)
+                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg_sq'][:5]}", args.logfile)
+                logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['step']}", args.logfile)
+                logging(f"lr: {lr_scheduler.get_last_lr()}", args.logfile)
+                logging(f"scheduler_last_epoch: {lr_scheduler.state_dict()['last_epoch']}", args.logfile)
 
             if step < start_step:
                 logging(f"Skip epoch {epoch}, step {step}, batch {i}", args.logfile)
@@ -272,12 +292,20 @@ def main(rank, args, world_size):
             loss = loss / args.gradient_accumulation_steps
             accelerator.backward(loss)
 
+            # Plot example gradients of the first layer
+            for name, param in LLM.module.transformer.wte.named_parameters():
+                if name == "weight":
+                    logging(f"LLM.module.transformer.wte.weight[:5] grads: {param.grad.data[:5]}", args.logfile)
+            # Plot loss
+            logging(f"Loss: {loss.item()}", args.logfile)
+
             if (i + 1) % args.gradient_accumulation_steps == 0:
                 logging(f"Graident accumulation at epoch {epoch}, step {step}, batch {i}", args.logfile)
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
 
+                logging("Updated and will save.", args.logfile)
                 logging(f"LLM.module.transformer.wte.weight[:5]: {LLM.module.transformer.wte.weight[:5]}", args.logfile)
                 logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg'][:5]}", args.logfile)
                 logging(f"optimizer state dict: {optimizer.state_dict()['state'][0]['exp_avg_sq'][:5]}", args.logfile)
