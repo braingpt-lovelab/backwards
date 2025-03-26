@@ -172,11 +172,11 @@ def main(rank, args, world_size):
 
 
 
-        # DEBUG: disable all dropout
-        model_config.attn_pdrop = 0
-        model_config.resid_pdrop = 0
-        model_config.embd_pdrop = 0
-        model_config.summary_first_dropout = 0
+        # # DEBUG: disable all dropout
+        # model_config.attn_pdrop = 0
+        # model_config.resid_pdrop = 0
+        # model_config.embd_pdrop = 0
+        # model_config.summary_first_dropout = 0
         
 
 
@@ -255,10 +255,10 @@ def main(rank, args, world_size):
             logging(f"\n\nRunning epoch {epoch}, step {step}, batch {i}", args.logfile)
             logging(f"Sampled inputs[:2]: {batch['input_ids'][:2]}", args.logfile)
             logging(
-                f"Random states for rank {accelerator.process_index}: "
-                f"random={random.getstate()[1][:3]}, "  # First 3 values for brevity
-                f"np_random={np.random.get_state()[1][:3]}, "  # First 3 values
-                f"torch={torch.get_rng_state()[:3].tolist()}, "  # First 3 values
+                f"Random states for rank {accelerator.process_index}:\n"
+                f"random={random.getstate()[1][:3]},\n"  # First 3 values for brevity
+                f"np_random={np.random.get_state()[1][:3]},\n"  # First 3 values
+                f"torch={torch.get_rng_state()[:3].tolist()},\n"  # First 3 values
                 f"torch_cuda={torch.cuda.get_rng_state(device=f'cuda:{accelerator.process_index}')[:3].tolist()}",
                 args.logfile
             )
@@ -600,6 +600,7 @@ if __name__ == "__main__":
     )    
     device = accelerator.device
     random.seed(args.random_seed)
+    np.random.seed(args.random_seed)
     torch.manual_seed(args.random_seed)
 
     main(0, args, world_size)
