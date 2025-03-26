@@ -256,10 +256,10 @@ def main(rank, args, world_size):
             logging(f"Sampled inputs[:2]: {batch['input_ids'][:2]}", args.logfile)
             logging(
                 f"Random states for rank {accelerator.process_index}:\n"
-                f"random={random.getstate()[1][:3]},\n"  # First 3 values for brevity
-                f"np_random={np.random.get_state()[1][:3]},\n"  # First 3 values
-                f"torch={torch.get_rng_state()[:3].tolist()},\n"  # First 3 values
-                f"torch_cuda={torch.cuda.get_rng_state(device=f'cuda:{accelerator.process_index}')[:3].tolist()}",
+                f"random={random.getstate()[1][:10]},\n" 
+                f"np_random={np.random.get_state()[1][:10]},\n" 
+                f"torch={torch.get_rng_state()[:10].tolist()},\n"
+                f"torch_cuda={torch.cuda.get_rng_state(device=f'cuda:{accelerator.process_index}')[:10].tolist()}",
                 args.logfile
             )
 
@@ -552,7 +552,10 @@ if __name__ == "__main__":
     world_size = torch.cuda.device_count()
     print(world_size)
 
-    accelerator = Accelerator(log_with="wandb")
+    accelerator = Accelerator(
+        log_with="wandb", 
+        rng_types=["torch", "cuda", "generator"],
+    )
 
     # Handle WandB run ID for resuming, synchronized across processes
     wandb_run_id_path = os.path.join(args.outputdir, 'wandb_run_id.txt')
@@ -602,6 +605,7 @@ if __name__ == "__main__":
     random.seed(args.random_seed)
     np.random.seed(args.random_seed)
     torch.manual_seed(args.random_seed)
+    torch.cuda.manual_seed_all(args.random_seed)
 
     main(0, args, world_size)
     accelerator.end_training()
