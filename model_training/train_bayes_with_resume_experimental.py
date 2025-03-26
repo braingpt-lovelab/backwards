@@ -167,7 +167,20 @@ def main(rank, args, world_size):
         model_config = AutoConfig.from_pretrained(args.model_path)
         # Update vocab size if using custom tokenizer
         if args.custom_tokenizer != "None":
-            model_config.vocab_size = tokenizer.vocab_size 
+            model_config.vocab_size = tokenizer.vocab_size
+
+
+
+
+        # DEBUG: disable all dropout
+        model_config.attn_pdrop = 0
+        model_config.resid_pdrop = 0
+        model_config.embd_pdrop = 0
+        model_config.summary_first_dropout = 0
+        
+
+
+
         LLM = AutoModelForCausalLM.from_config(model_config)
 
     elif args.train_mode == "finetune":
@@ -241,6 +254,14 @@ def main(rank, args, world_size):
             logging(f"\nrank {accelerator.process_index} | epoch {epoch} | step {step} | batch {i}", args.logfile)
             logging(f"\n\nRunning epoch {epoch}, step {step}, batch {i}", args.logfile)
             logging(f"Sampled inputs[:2]: {batch['input_ids'][:2]}", args.logfile)
+            logging(
+                f"Random states for rank {accelerator.process_index}: "
+                f"random={random.getstate()[1][:3]}, "  # First 3 values for brevity
+                f"np_random={np.random.get_state()[1][:3]}, "  # First 3 values
+                f"torch={torch.get_rng_state()[:3].tolist()}, "  # First 3 values
+                f"torch_cuda={torch.cuda.get_rng_state(device=f'cuda:{accelerator.process_index}')[:3].tolist()}",
+                args.logfile
+            )
 
             if step < start_step:
                 logging(f"Skip epoch {epoch}, step {step}, batch {i}", args.logfile)
@@ -277,7 +298,7 @@ def main(rank, args, world_size):
             accelerator.backward(loss)
 
             # Plot loss
-            logging(f"\nrank: {accelerator.process_index}, Loss: {loss.item()}", args.logfile)
+            logging(f"\nrank: {accelerator.process_index}, step {step}, Loss: {loss.item()}", args.logfile)
 
             if (i + 1) % args.gradient_accumulation_steps == 0:
                 logging(f"Graident accumulation at epoch {epoch}, step {step}, batch {i}", args.logfile)
