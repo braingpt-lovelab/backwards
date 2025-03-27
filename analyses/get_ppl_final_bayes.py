@@ -74,8 +74,9 @@ def main(llm, dataset_type, sample_percentage):
     config_fpath = os.path.join(configs_dir, f"{llm}.json")
     with open(config_fpath, "r") as f:
         args = json.load(f)
-
-    args["cache_dir"] = os.path.join(reference_dir, args["cache_dir_validation"])
+    
+    args["cache_dir_train"] = os.path.join(reference_dir, args["cache_dir_train"])
+    args["cache_dir_validation"] = os.path.join(reference_dir, args["cache_dir_validation"])
     if "backwards" in llm:
         tokenizer_dir = "cache/gpt2_neuro_tokenizer_backwards"
     else:
@@ -86,12 +87,16 @@ def main(llm, dataset_type, sample_percentage):
     args = argparse.Namespace(**args)
 
     # Load dataset
-    dataset = datasets.Dataset.load_from_disk(args.cache_dir)
+    
+    
     if dataset_type == "train":
+        dataset = datasets.Dataset.load_from_disk(args.cache_dir_train)
         if sample_percentage < 1.0:
             dataset = dataset.shuffle(seed=42).select(
                 range(int(len(dataset) * sample_percentage))
             )
+    else:
+        dataset = datasets.Dataset.load_from_disk(args.cache_dir_validation)
 
     print(f"Loading {len(dataset)} samples for {dataset_type}")
     dataloader = DataLoader(
@@ -120,7 +125,7 @@ def main(llm, dataset_type, sample_percentage):
 if __name__ == "__main__":
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--use_human_abstract", type=str, default="True")
@@ -134,8 +139,8 @@ if __name__ == "__main__":
     sample_percentage = args.sample_percentage
 
     llms = [
-        # "gpt2_scratch_neuro_tokenizer_bayes_fwd",
-        "gpt2_scratch_neuro_tokenizer_bayes_rev",
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd",
+        # "gpt2_scratch_neuro_tokenizer_bayes_rev",
     ]
 
     reference_dir = "/home/ken/projects/backwards/model_training"
