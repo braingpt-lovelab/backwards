@@ -15,6 +15,18 @@ model_list = {
             "alpha": 0.8,
             "hatch": "\\",
         },
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd": {
+            "llm": "GPT2-124M (bayes fwd)",
+            "color": '#758EB7',
+            "alpha": 0.8,
+            "hatch": "",
+        },
+        "gpt2_scratch_neuro_tokenizer_bayes_rev": {
+            "llm": "GPT2-124M (bayes rev)",
+            "color": '#758EB7',
+            "alpha": 0.8,
+            "hatch": "\\",
+        }
     },
     "gpt2-medium": {
         "gpt2-medium_scratch_neuro_tokenizer": {
