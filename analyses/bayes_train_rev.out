@@ -1,0 +1,945 @@
+nohup: ignoring input
+The argument `trust_remote_code` is to be used with Auto classes. It has no effect here and is ignored.
+Loading 188 samples for train
+Loading GPT2 model from /home/ken/projects/backwards/model_training/exp/gpt2_scratch_neuro_tokenizer_bayes_rev/checkpoint.4
+
+Batch 0
+['<|endoftext|>', 'Ġthe', 'Ġof', 'Ġface', 'Ġdorsal']
+['Ġbe', 'Ġcan', 'Ġthat', 'Ġfindings', 'Ġimportant']
+PPL: 115.17166118175362
+
+Batch 1
+['<|endoftext|>', 'Ġ3', 'Ġmodule', 'Ġfrom', 'Ġitems']
+['-', 'Ġco', ',', 'Ġpsychiatry', 'Ġchild']
+PPL: 86.65643310331487
+
+Batch 2
+['<|endoftext|>', 'maximum', 'Ġ(', 'ĠTE', 'Ġin']
+['Ġand', ',', 'ĠFRs', ',', 'ĠHCs']
+PPL: 27.707957504092853
+
+Batch 3
+['<|endoftext|>', ',', 'hs', 'ĠRi', 'Ġ;']
+['ĠOne', '.', 'ĠHV', 'Ġmatched', 'Ġof']
+PPL: 46.06420403910922
+
+Batch 4
+['<|endoftext|>', 'Ġ,', 'Ġ', 'Ġ,', 'Âł']
+['Ġcontrol', 'Ġin', 'Ġthan', 'Ġmice', 'ĠCSR']
+PPL: 10.40293506463843
+
+Batch 5
+['<|endoftext|>', 'Ġtemporal', 'Ġposterior', 'Ġa', 'Ġin']
+['Ġsome', ',', 'Ġtastes', 'Ġto', 'Ġresponded']
+PPL: 38.893621261423306
+
+Batch 6
+['<|endoftext|>', 'Ġalterations', 'Ġin', 'Ġresults', 'Ġinflammation']
+['ĠPI', 'Ġthe', 'Ġthat', 'Ġfound', 'Ġhave']
+PPL: 33.341394326403524
+
+Batch 7
+['<|endoftext|>', 'Ġthese', 'ĠTogether', '.', 'Ġtract']
+['Ġfor', 'Ġstaining', 'Ġby', 'Ġrevealed', 'Ġas']
+PPL: 44.82645639268657
+
+Batch 8
+['<|endoftext|>', 'Ġ', 'Ġ,', 'Ġ(', 'Ġregions']
+['Ġcortex', 'Ġtemporal', 'Ġmedial', 'Ġthe', 'Ġon']
+PPL: 17.890216134127794
+
+Batch 9
+['<|endoftext|>', 'Ġsubsequent', 'Ġtheir', 'Ġand', 'Ġparadigms']
+['Ġpyramidal', 'Ġon', 'Ġgain', 'Ġsynaptic', 'Ġof']
+PPL: 46.13316019433103
+
+Batch 10
+['<|endoftext|>', ';', '308', '.', '1']
+['Ġcontrol', 'Ġhealthy', 'Ġthe', 'Ġbetween', 'Ġobserved']
+PPL: 13.018490924304842
+
+Batch 11
+['<|endoftext|>', 'Ġlevels', 'Ġplasma', 'DOPA', '-']
+['Ġrole', 'Ġthe', 'Ġon', 'Ġevidence', 'Ġnew']
+PPL: 43.535397911014286
+
+Batch 12
+['<|endoftext|>', 'Ġtime', 'treatment', '-', 'to']
+['Ġsal', 'Ġof', 'Ġml', 'Ġ1', 'Ġeach']
+PPL: 9.828697803394512
+
+Batch 13
+['<|endoftext|>', 'ĠÎ±', 'Ġthe', 'Ġbetween', 'Ġsite']
+['(+)/', 'ĠÎ²', '),', '(-', 'Î²']
+PPL: 49.962299503520114
+
+Batch 14
+['<|endoftext|>', 'Ġ', '.,', 'Ġal', 'Ġet']
+[',', 'Ġhypothalamus', 'Ġthe', 'Ġon', 'Ġeffect']
+PPL: 32.05820441942551
+
+Batch 15
+['<|endoftext|>', 'Ġweeks', 'Ġ4', 'Ġwithin', 'Ġdominance']
+['Ġsocial', 'Ġbecause', ',', 'Ġand', 'ĠLPFC']
+PPL: 28.944191890134853
+
+Batch 16
+['<|endoftext|>', 'Ġperipheral', 'Ġand', 'Ġcentral', 'Ġboth']
+['ĠPC', 'Ġin', 'Ġexpression', 'Ġparkin', 'Ġof']
+PPL: 25.576286196345755
+
+Batch 17
+['<|endoftext|>', 'Ġhigher', 'Ġa', 'Ġhave', 'Ġwomen']
+['Ġsample', 'Ġpooled', 'Ġthe', 'Ġin', 'Ġmodels']
+PPL: 36.6438686092369
+
+Batch 18
+['<|endoftext|>', 'âĢĲ', 'Ġbetween', 'Ġand', 'Ġselection']
+['01', '.', '0', 'âĢĵ', '1']
+PPL: 39.0925790685292
+
+Batch 19
+['<|endoftext|>', '))', 'NE', 'Ġ(', 'Ġenvironment']
+['FS', 'ĠWL', 'Ġa', ',', 'LTD']
+PPL: 11.96473573352641
+
+Batch 20
+['<|endoftext|>', 'Ġdata', 'Ġdifferent', 'Ġwith', 'Ġtimes']
+['Ġ(', 'ĠANOVAs', 'measures', '-', 'Ġrepeated']
+PPL: 24.25994317000291
+
+Batch 21
+['<|endoftext|>', 'Ġthe', 'Ġbe', 'Ġto', 'Ġdetermined']
+['Ġpatients', 'ĠALS', 'Ġthe', 'Ġof', '%']
+PPL: 29.490101385907643
+
+Batch 22
+['<|endoftext|>', 'Correct', 'Ġ(', 'Ġnew', 'Ġas']
+['Ġengagement', 'Ġthe', 'Ġto', 'Ġlinked', 'Ġbeen']
+PPL: 30.3591977424867
+
+Batch 23
+['<|endoftext|>', 'j', 'j', 'ĠNa', 'Ġand']
+['Ġbetween', 'Ġdifference', 'Ġlargest', 'Ġthe', 'Ġwith']
+PPL: 40.415755787309855
+
+Batch 24
+['<|endoftext|>', 'Ġnodes', 'Ġlayer', 'Ġhidden', 'Ġthe']
+['Ġanalysis', 'Ġconnectivity', 'Ġfunctional', ')', 'A']
+PPL: 27.63684185963654
+
+Batch 25
+['<|endoftext|>', 'Ġ', ',', 'de', 'on']
+['Ġrequired', 'Ġas', 'Ġused', 'Ġwere', 'Ġtests']
+PPL: 24.4802443648688
+
+Batch 26
+['<|endoftext|>', '.', 'Ġrats', 'Ġ)', 'Ġ']
+['Ġand', 'Ġamplitudes', 'ĠmIPSC', 'Ġon', 'A']
+PPL: 12.03402020319543
+
+Batch 27
+['<|endoftext|>', 'Ġproduct', 'Ġthe', 'Ġare', 'Ġtraits']
+['Ġalterations', 'Ġby', 'Ġcharacterised', 'Ġbe', 'Ġto']
+PPL: 53.898800882567954
+
+Batch 28
+['<|endoftext|>', '##', 'Ċ', 'ĠĊĊĊ', 'Ġ].']
+['LPS', 'Ġ(', 'Ġlipopolysaccharide', 'Ġbacterial', 'negative']
+PPL: 36.85640580099031
+
+Batch 29
+['<|endoftext|>', 'Ġmicroscope', '1', 'ĠBX', 'ĠOlympus']
+['ĠTC', 'ĠCTC', 'ĠTGC', 'ĠTTC', 'ĠACT']
+PPL: 34.28795382942606
+
+Batch 30
+['<|endoftext|>', 'MPFC', 'Ġ(', 'ĠCortex', 'ĠPrefrontal']
+['Ġin', 'Ġmode', 'Ġtonic', 'Ġthe', 'Ġwithin']
+PPL: 60.7372033481964
+
+Batch 31
+['<|endoftext|>', 'ĠN', 'Ġthe', 'Ġin', 'Ġtests']
+['Ġthat', 'Ġsuggests', 'Ġreinforcers', 'Ġtwo', 'Ġthese']
+PPL: 53.51475135444793
+
+Batch 32
+['<|endoftext|>', 'Ġthe', 'Ġunderlie', 'Ġcould', 'Ġcircuits']
+['âĢĻ', 'Ġpeople', 'Ġof', 'Ġcontent', 'Ġthe']
+PPL: 34.92399948766077
+
+Batch 33
+['<|endoftext|>', '.', 'Ġcortex', 'Ġsomatomotor', 'Ġwith']
+['Ġand', ',', 'Ġacquisition', 'Ġthe', 'Ġof']
+PPL: 11.891945366172747
+
+Batch 34
+['<|endoftext|>', 'Ġcan', 'Ġcigarette', 'Ġper', 'Ġextracted']
+['Ġreplications', 'Ġpartial', ',', 'Ġreplications', 'Ġof']
+PPL: 54.5730586131418
+
+Batch 35
+['<|endoftext|>', 'ĠAtoh', 'Ġwith', 'Ġinterfere', 'Ġnot']
+['ĠIn', '.', 'h', 'en', '-']
+PPL: 35.116596681343935
+
+Batch 36
+['<|endoftext|>', 'Ġconditioning', 'For', 'Ċ', 'ĠĊĠĠ']
+['Ġthen', 'Ġand', 'Ġday', 'Ġfirst', 'Ġthe']
+PPL: 26.20226910355579
+
+Batch 37
+['<|endoftext|>', 'Ġmultiple', 'Ġfor', 'Ġcorrecting', 'Ġafter']
+[',', 'Ġsex', ',', 'Ġage', 'Ġfor']
+PPL: 12.020006910738928
+
+Batch 38
+['<|endoftext|>', 'Ġ', 'Ġ(', 'brevin', 'tro']
+['ĠĠ', 'Ġfor', 'Ġvalue', 'ĠĠ', 'Ġp']
+PPL: 34.998150910251546
+
+Batch 39
+['<|endoftext|>', 'Ġto', 'Ġprior', 'Ġconsent', 'Ġinformed']
+['Ġal', 'Ġet', 'za', 'Gar', '-']
+PPL: 44.723696864896056
+
+Batch 40
+['<|endoftext|>', 'This', 'Ċ', 'ĠĊĠĠ', '.']
+['Ġto', 'Ġthem', 'ject', 'Ġrepro', 'Ġautomatically']
+PPL: 50.193292154041835
+
+Batch 41
+['<|endoftext|>', 'Ġphenomenon', 'Ġfacilitatory', 'Ġthis', 'Ġexplain']
+['max', 'ĠM', 'Ġto', 'Ġnormalized', 'Ġamplitudes']
+PPL: 16.305647751871312
+
+Batch 42
+['<|endoftext|>', 'Ċ', 'ĠĊĠĠ', '.', 'ĠB']
+['Ġthe', 'Ġnormalized', 'Ġwe', ',', 'ĠThen']
+PPL: 17.45305930649837
+
+Batch 43
+['<|endoftext|>', '-', 'ĠE', 'Ġevaluate', 'Ġto']
+['an', 'Ġtet', 'strong', '-', 'ET']
+PPL: 11.916958788556654
+
+Batch 44
+['<|endoftext|>', 'Ġin', 'Ġonly', 'Ġexpression', 'ĠĠ']
+['ĠDAF', 'Ġthe', 'Ġof', 'Ġactivity', 'Ġthe']
+PPL: 20.711413972985586
+
+Batch 45
+['<|endoftext|>', 'Ġmean', 'Ġthe', 'Ġas', 'assessed']
+['Ġexcitation', 'Ġneuronal', 'Ġbetween', 'Ġbalance', 'Ġthe']
+PPL: 34.44306235978068
+
+Batch 46
+['<|endoftext|>', 'ĠRats', 'Ġ].', 'Ġ', 'Ġ,']
+['âĢī', 'ĠĠ', 'Ġp', 'Ġ', 'Ġ(']
+PPL: 34.61766065943462
+
+Batch 47
+['<|endoftext|>', 'Ġ).', 'Ġ', ',', 'ser']
+['Ġinitial', 'Ġto', 'Ġseems', 'Ġactivation', 'hippocampal']
+PPL: 34.13867931331241
+
+Batch 48
+['<|endoftext|>', 'Ġdefine', 'Ġto', 'Ġused', 'Ġand']
+['on', 'X', 'i', 'Ġ(', 'Ġcamera']
+PPL: 54.99827424648549
+
+Batch 49
+['<|endoftext|>', 'Ġin', 'Ġinteract', ',', 'Ġcues']
+['Ġthe', 'Ġthat', 'Ġfound', 'ĠWe', '.']
+PPL: 44.27862572688553
+
+Batch 50
+['<|endoftext|>', 'Ġfor', 'Ġvalue', 'Ġdiagnostic', 'ĠThe']
+['Ġscreening', 'Ġthe', 'Ġverify', 'Ġto', 'Ġorder']
+PPL: 23.09920965299235
+
+Batch 51
+['<|endoftext|>', 'Ġat', 'ĠĠ', 'ow', 'p']
+['Ġoccurs', 'Ġwhich', ',', 'Ġartifact', 'Ġthe']
+PPL: 80.12029447768825
+
+Batch 52
+['<|endoftext|>', 'Ġwhen', 'Ġthat', 'Ġnecessity', 'Ġlogical']
+['Ġis', 'Ġdata', 'Ġthis', ',', 'Ġpaper']
+PPL: 46.40366772436988
+
+Batch 53
+['<|endoftext|>', 'Ġ(', 'Ġinfarction', 'Ġcerebellar', 'Ġwith']
+['Ġis', 'Ġlength', 'Ġpath', 'Ġshortest', 'The']
+PPL: 13.888512099918712
+
+Batch 54
+['<|endoftext|>', 'ĠUSA', 'ĠMassachusetts', 'ĠNatick', '.,']
+['Ġlower', 'Ġof', 'ĠSLEs', 'Ġproduce', 'Ġto']
+PPL: 37.94295476148861
+
+Batch 55
+['<|endoftext|>', 'Ġanalyzed', 'Ġwas', 'Ġdata', 'Ġthe']
+['Ġreinforced', 'Ġfurther', 'Ġis', 'ĠThis', '.']
+PPL: 60.20640832012018
+
+Batch 56
+['<|endoftext|>', 'Ġ(', 'ocytin', 'ĠBi', '.']
+['Ġ(', 'Ġplasmids', 'Ġof', 'Ġmix', 'Ġa']
+PPL: 42.01018874539951
+
+Batch 57
+['<|endoftext|>', 'Ġmin', 'Ġ15', 'Ġadministered', 'Ġwas']
+['practice', '-', 'self', 'Ġ"', 'Ġpositive']
+PPL: 34.773995380126436
+
+Batch 58
+['<|endoftext|>', 'Ġvivo', 'Ġin', 'ĠĠ', 'Ġeffects']
+['ĠCSF', 'Ġin', 'Ġmitochondria', 'Ġreleased', 'Ġthe']
+PPL: 37.07919180367597
+
+Batch 59
+['<|endoftext|>', '64', 'Ġ(', 'ĠCCP', 'ĠUCLA']
+['ĠFDR', ',', '05', '.', '0']
+PPL: 42.89442463591178
+
+Batch 60
+['<|endoftext|>', 'Ġtreatment', 'Ġinto', 'Ġcontexts', 'associated']
+['.', 'Ġtherapy', 'Ġof', 'Ġcessation', 'Ġafter']
+PPL: 39.3710718688643
+
+Batch 61
+['<|endoftext|>', 'ent', 'B', 'Ġ(', 'Ġgranules']
+['-', 'Ġprion', 'Ġthe', 'Ġshowing', 'Evidence']
+PPL: 26.34001002713193
+
+Batch 62
+['<|endoftext|>', 'Ġtube', 'Ġthe', 'Ġof', 'Ġends']
+['ĠAM', ';', 'ĠMÎ©', '5', 'Ġ(']
+PPL: 32.206535547259286
+
+Batch 63
+['<|endoftext|>', 'Ġa', 'Ġis', 'osis', 'erc']
+['ĠFBS', '%', 'Ġ10', 'with', 'Ċ']
+PPL: 70.36164371520546
+
+Batch 64
+['<|endoftext|>', 'Ċ', 'ĠĊ', ').', '8']
+['Ġvalues', 'Ġwith', 'Ġagree', 'Ġdata', 'Ġclamp']
+PPL: 29.575658793045147
+
+Batch 65
+['<|endoftext|>', 'Ġsusceptible', 'Ġmore', 'Ġwere', 'Ġneurons']
+['Ġare', 'Ġwhich', 'Ġtransmission', 'Ġsynaptic', 'Ġfor']
+PPL: 35.36796223870432
+
+Batch 66
+['<|endoftext|>', 'Ġregion', 'Ġcingulate', 'Ġsubcallosal', 'Ġthe']
+[',', 'idden', 'b', 'Ġfor', 'Ġnearly']
+PPL: 74.10237465614384
+
+Batch 67
+['<|endoftext|>', 'Ġsimultaneously', 'Ġstudied', 'Ġare', 'Ġsubjects']
+['Ġnon', 'Ġcoordinate', 'ancers', 'ĠD', 'Ġ).']
+PPL: 69.14845020275537
+
+Batch 68
+['<|endoftext|>', ')', 'e', 'Ġ(', ';']
+['Ġ', ',', 'stein', 'ark', 'St']
+PPL: 20.580091546007186
+
+Batch 69
+['<|endoftext|>', 'Ġis', 'Ġlayer', 'Ġeach', 'Ġto']
+['The', 'Ċ', 'ĠĊ', '.', 'Ġspoken']
+PPL: 58.71740927020626
+
+Batch 70
+['<|endoftext|>', 'ĠĠ', ',', '14', '.']
+['Ġregions', 'Ġfive', 'Ġthe', 'Ġacross', 'Ġaveraged']
+PPL: 38.58302762445226
+
+Batch 71
+['<|endoftext|>', 'Be', 'Ġ(', 'Ġroot', '7']
+['Ġwithin', 'Ġhighlighted', 'Ġis', 'Ġchange', 'Ġneuroplastic']
+PPL: 66.60166086016284
+
+Batch 72
+['<|endoftext|>', 'Ġwere', 'Ġeffects', 'Ġadverse', 'related']
+['âĢĵ', 'IgG', 'âĢĲ', '1', 'ĠLGI']
+PPL: 36.22184223248714
+
+Batch 73
+['<|endoftext|>', 'Ġ1', 'ĠSynaptotagmin', 'Ġ),', 'Ġ']
+['57', 'ĠC', '.', 'Ġmice', 'ĠcKO']
+PPL: 27.99707147567425
+
+Batch 74
+['<|endoftext|>', 'Ġchloride', 'Ġsodium', '%', '9']
+['Ġand', 'Ġknown', 'Ġwell', 'Ġare', 'Ġparadigms']
+PPL: 42.28026347314822
+
+Batch 75
+['<|endoftext|>', 'Ġextremes', 'Ġto', 'Ġsensitive', 'Ġis']
+['Ġderived', 'Ġsubsequently', 'Ġand', 'Ġ]', 'Ġ[']
+PPL: 32.31413902574114
+
+Batch 76
+['<|endoftext|>', 'Ġare', 'Ġpreferences', 'ic', 'Ġepistem']
+['ĠEach', '.', 'Ġparameters', 'Ġmodel', 'Ġcontinuous']
+PPL: 48.991911187629064
+
+Batch 77
+['<|endoftext|>', 'Ġthe', 'Ġwith', 'Ġonce', ',']
+['Ġnot', 'Ġbut', ')', '001', '.']
+PPL: 30.683634052868342
+
+Batch 78
+['<|endoftext|>', 'Ġnoteworthy', 'Ġespecially', 'Ġis', 'Ġresult']
+['Ġscenes', 'Ġvisual', 'Ġbetween', 'Ġdifference', 'Ġno']
+PPL: 41.568685672127685
+
+Batch 79
+['<|endoftext|>', '-', '4', 'ĠAQP', 'Ġin']
+['ĠThe', '.', 'MP', 'ĠIV', 'Ġto']
+PPL: 23.609073472839114
+
+Batch 80
+['<|endoftext|>', '-', 'ALS', 'Ġ(', 'Ġcompetitor']
+['Ġalso', 'Ġwere', 'Ġvalues', 'ĠĠ', 'Ġp']
+PPL: 12.281784121636262
+
+Batch 81
+['<|endoftext|>', 'Ġemotionally', 'Ġfor', 'Ġprocesses', 'Ġspecial']
+['Ġand', ',', 'Ġseizures', 'Ġmotor', 'Ġnocturnal']
+PPL: 49.845734411470076
+
+Batch 82
+['<|endoftext|>', 'Ġspontaneous', 'Ġaltered', 'ly', 'Ġambiguous']
+['ĠAs', 'Ġ).', 'Ġ', '.,', 'Ġal']
+PPL: 20.44841217644093
+
+Batch 83
+['<|endoftext|>', '-', 'Ġtemporo', 'Ġlateral', 'Ġthe']
+['i', 'Ġ(', 'Ġprocessing', 'Ġinstruction', 'Ġto']
+PPL: 32.63131491520533
+
+Batch 84
+['<|endoftext|>', 'Ġcells', 'Ġpositive', 'Cre', 'Ġ(']
+['Ġexpression', 'Ġinduced', 'Ġviral', 'Ġretrograde', 'Ġobserved']
+PPL: 21.612703961098
+
+Batch 85
+['<|endoftext|>', 'Ġtarget', 'Ġits', 'Ġof', 'Ġinteraction']
+['Ġand', 'Ġmodel', 'ĠCUMS', 'Ġin', 'Ġdepression']
+PPL: 29.20674459892455
+
+Batch 86
+['<|endoftext|>', 'Motor', '.', 'Ġarea', 'Ġthis']
+['Ġon', 'Ġeffects', 'NIC', 'ĠD', 'Ġlacking']
+PPL: 44.775239303502026
+
+Batch 87
+['<|endoftext|>', 'Ġin', 'Ġactivity', 'ĠIncreased', '.']
+['Ġmice', 'Ġin', 'Ġabnormalities', 'Ġbehavioral', 'Ġand']
+PPL: 22.914784035360352
+
+Batch 88
+['<|endoftext|>', 'Ġset', 'Ġwas', 'Ġgroup', 'Ġcontrol']
+[',', 'Ġassay', 'Ġlocomotion', 'Ġthe', 'Ġfrom']
+PPL: 38.4728351467852
+
+Batch 89
+['<|endoftext|>', '3', 'ĠH', 'Ġtotal', 'Ġthe']
+['Ġlower', 'Ġwere', 'p', '10', 'S']
+PPL: 4.072603884248079
+
+Batch 90
+['<|endoftext|>', '-', 'ĠCS', 'Ġand', 'US']
+['Ġ3', 'Ġafter', 'Ġand', 'Ġcontext', 'Ġnovel']
+PPL: 25.049976240022303
+
+Batch 91
+['<|endoftext|>', 'Ġand', 'Ġactivation', 'Ġthe', 'Ġof']
+['19', '.', '0', 'Âł', 'Â±']
+PPL: 13.786132381576252
+
+Batch 92
+['<|endoftext|>', 'down', '-', 'Ġtop', 'Ġand']
+['Ġinitial', 'Ġthe', 'Ġof', 'Ġrobustness', 'Ġthe']
+PPL: 76.62785458932434
+
+Batch 93
+['<|endoftext|>', 'Ġhome', 'Ġduring', 'Ġdisappeared', 'Ġdifference']
+['Ġthe', 'Ġand', ')', 'ĠUS', 'no']
+PPL: 44.78331051906992
+
+Batch 94
+['<|endoftext|>', 'Ġin', 'ly', 'Ġintramuscular', 'Ġaccumulates']
+['/', 'Ġendosomes', 'Ġlate', 'Ġwith', 'Ġendosomes']
+PPL: 16.7767455547582
+
+Batch 95
+['<|endoftext|>', 'Ġrotarod', 'A', 'Ċ', 'ĠĊĠĠ']
+[',', 'Ġchambers', 'Ġinterconnected', 'Ġthree', 'Ġwith']
+PPL: 30.604384817456022
+
+Batch 96
+['<|endoftext|>', 'Ġa', 'Ġinclude', 'Ġto', 'Ġone']
+['Ġstandard', 'Ġusing', 'Ġdimensions', 'Ġ40', 'Ġto']
+PPL: 32.53443573362666
+
+Batch 97
+['<|endoftext|>', 'Ġto', 'Ġresponse', 'Ġis', 'ĠĠ']
+['Ġrapidly', 'Ġdeteriorates', 'Ġimbalance', 'Ġnetwork', 'Ġmini']
+PPL: 28.033380419168314
+
+Batch 98
+['<|endoftext|>', 'Ġhighlights', 'ĠThis', 'Ġ).', 'Ġ']
+['Ġ;', 'Ġ', '.,', 'Ġal', 'Ġet']
+PPL: 26.59463503631122
+
+Batch 99
+['<|endoftext|>', 'Ġby', 'Ġcharacterized', 'Ġare', 'Ġhealing']
+[',', '2', 'ĠMeCP', 'Ġneural', 'Ġof']
+PPL: 24.800104196013255
+
+Batch 100
+['<|endoftext|>', 'order', '-', 'Ġhigher', 'Ġare']
+['202', 'x', '&#', 'r', 'Ġ(']
+PPL: 30.297800381306747
+
+Batch 101
+['<|endoftext|>', 'Ġas', 'Ġerrors', 'Ġmemory', 'Ġworking']
+['Ġ).', 'Ġ', '.,', 'Ġal', 'Ġet']
+PPL: 52.54642694586911
+
+Batch 102
+['<|endoftext|>', 'Ġwith', 'Ġpool', 'Ġhigh', 'Ġm']
+['Ġimpairments', 'Ġmemory', 'Ġup', 'Ġpicking', 'Ġin']
+PPL: 42.0951200986162
+
+Batch 103
+['<|endoftext|>', 'Ġyielded', 'Ġcategory', 'Ġprobability', ']']
+[',', '5', '.', '0', 'Ġ[']
+PPL: 9.792104473998444
+
+Batch 104
+['<|endoftext|>', 'ĠRegions', 'Ġdifferent', 'Ġfrom', 'Ġestimated']
+['Ġresults', 'ĠThese', '.', 'Ġanalyzed', 'Ġsubjects']
+PPL: 41.33875043666499
+
+Batch 105
+['<|endoftext|>', 'Ġindividuals', '+', 'ĠHIV', 'Ġbenefit']
+['Ġschizophrenia', 'Ġestablished', 'Ġto', 'Ġschizotypy', 'Ġsubclinical']
+PPL: 77.10665330860922
+
+Batch 106
+['<|endoftext|>', 'Ġantipsychotic', 'Ġatypical', 'Ġthe', 'Ġthat']
+['Ġall', 'Ġin', '%', '64', '-']
+PPL: 39.85100099052637
+
+Batch 107
+['<|endoftext|>', 'Ġof', 'Ġage', 'Ġand', 'Ġduration']
+['ĠB', 'ĠLewy', 'Ġthe', 'Ġacross', 'Ġnetworks']
+PPL: 73.56796458621542
+
+Batch 108
+['<|endoftext|>', 'Ġ).', 'Ġ', 'Ġ;', 'Ġ(']
+['ĠDRG', 'Ġrat', 'Ġin', 'Ġoutgrowth', 'Ġneurite']
+PPL: 31.56626765862636
+
+Batch 109
+['<|endoftext|>', 'Ġastrogliosis', 'Ġfibrillary', 'tense', 'ĠIn']
+['Ġ', 'Ġ(', ').', 'Ġencephalitis', 'Ġlimbic']
+PPL: 41.19006585738743
+
+Batch 110
+['<|endoftext|>', 'mg', '05', '.', '0']
+['0', 'Â±', '17', '.', 'Ġ1']
+PPL: 13.048415340496131
+
+Batch 111
+['<|endoftext|>', 'Ġbrain', 'Ġhuman', 'Ġthe', 'Ġin']
+['Ġ7', 'Ġwas', 'Ġcell', 'Ġper', 'Ġreads']
+PPL: 69.98947672329092
+
+Batch 112
+['<|endoftext|>', 'Ġbrains', 'Ġpig', 'Ġfrom', 'Ġpreparations']
+['Ġeffect', 'Ġthe', 'Ġthat', 'Ġsuggesting', 'Ġstrongly']
+PPL: 29.329866151035784
+
+Batch 113
+['<|endoftext|>', 'ĠĊ', '.', 'Ġoccurs', 'ĠSTDP']
+['Ġa', 'Ġis', 'Ġbehaviour', 'Ġthis', 'Ġthat']
+PPL: 62.80967123626969
+
+Batch 114
+['<|endoftext|>', 'RS', 'ST', 'ĠTW', ';']
+['Ġconcept', 'Ġa', ',', 'Ġcortex', 'Ġmotor']
+PPL: 22.676984847948965
+
+Batch 115
+['<|endoftext|>', 'ag', 'c', 'att', 'tc']
+['.', '3', 'ĠpcDNA', 'Ġand', 'âĢ²']
+PPL: 70.9893827298654
+
+Batch 116
+['<|endoftext|>', 'ĠĊĠĠ', 'ĠConstruction', 'ĠNetwork', 'ĠBrain']
+['Ġincluded', 'Ġ2012', 'Ġin', 'Ġcollected', 'Ġdata']
+PPL: 14.887049393642911
+
+Batch 117
+['<|endoftext|>', 'Ġ0', 'Ġ<', 'ĠĠ', 'Ġp']
+['Ġresuspended', 'Ġand', 'Ġtimes', 'Ġthree', 'Ġwashed']
+PPL: 20.8764486356152
+
+Batch 118
+['<|endoftext|>', 'Ġthe', 'Ġto', 'Ġaccording', 'Ġprimer']
+['Ġtreatment', 'Drug', 'Ċ', 'ĠĊĠĠ', 'Ġtreatment']
+PPL: 33.213174357869484
+
+Batch 119
+['<|endoftext|>', 'Ġinterest', 'Ġof', 'Ġconflict', 'Ġpotential']
+['ved', 'vi', 'sur', '-', 'Ġnon']
+PPL: 20.473261946791478
+
+Batch 120
+['<|endoftext|>', 'Ġventricles', 'Ġbilateral', 'Ġthe', 'Ġof']
+['Ġin', 'Ġout', 'Ġcarried', 'Ġwas', 'Ġstudy']
+PPL: 51.12548076893922
+
+Batch 121
+['<|endoftext|>', 'Ġal', 'Ġet', ',', 'di']
+['ĠBoth', 'Ġ).', 'Âł', 'Figure', 'Ġ(']
+PPL: 41.683113792185985
+
+Batch 122
+['<|endoftext|>', 'Ġclassified', 'Ġneurons', 'Ġof', 'Ġactivity']
+['Ġversus', '-', 'Ġgraft', 'Ġof', 'Ġimpact']
+PPL: 53.89260730924909
+
+Batch 123
+['<|endoftext|>', 'Ġfor', 'Ġtools', 'Ġand', 'Ġtargets']
+['rin', 'ĠP', 'Ġ;', 'Ġ', '.,']
+PPL: 83.22703279074412
+
+Batch 124
+['<|endoftext|>', '-', 'Ġpost', 'Ġincludes', 'Ġthat']
+['Ġinitial', 'Ġthe', 'Ġwrote', 'Ġand', 'Ġstudy']
+PPL: 32.9339242803093
+
+Batch 125
+['<|endoftext|>', '8', 'Ġ[', 'Ġalpha', '),']
+['Ġof', 'Ġ22', 'Ġand', 'Ġresponse', 'Ġstate']
+PPL: 39.15419812419177
+
+Batch 126
+['<|endoftext|>', 'Ġenlargement', 'Ġamygdala', 'Ġwith', 'ĠTLE']
+['Ġrevealed', 'Ġalterations', 'Ġvolume', 'ĠGM', 'Ġsignificant']
+PPL: 13.843148970089413
+
+Batch 127
+['<|endoftext|>', 'Ġrelevance', 'Ġlittle', 'Ġwith', 'Ġconditions']
+['Ġa', 'Ġform', 'Ġto', '146', 'ĠCys']
+PPL: 37.982127378249764
+
+Batch 128
+['<|endoftext|>', 'Ġgroup', 'Ġcontrol', 'Ġthe', '.']
+['Ġ(', '4', 'RP', 'CT', '-']
+PPL: 7.183824617445207
+
+Batch 129
+['<|endoftext|>', 'Ġcomponent', 'pc', '2', 'ĠN']
+['Ġworking', 'Ġlaboratory', 'Ġand', 'Ġanimals', 'Ġrequired']
+PPL: 31.00721245270447
+
+Batch 130
+['<|endoftext|>', 'Ġthat', 'Ġshowing', 'Ġresults', ',']
+['Ġof', 'Ġreinstatement', 'Ġof', 'Ġindex', 'Ġthe']
+PPL: 44.00723144695764
+
+Batch 131
+['<|endoftext|>', 'Ġand', 'Ġdomains', 'ĠBehavioral', ')']
+['Ġthe', 'Ġof', ')', 'MDS', 'Ġ(']
+PPL: 35.828364404949866
+
+Batch 132
+['<|endoftext|>', 'Ġdifferent', 'Ġwith', 'Ġassociated', 'Ġcontrasts']
+['Ġto', 'Ġremain', 'ing', 'ask', 'tit']
+PPL: 43.06276041113391
+
+Batch 133
+['<|endoftext|>', 'Ġwere', 'fibers', '-', 'ĠU']
+['Ġseminal', 'Ġtheir', 'Ġin', ',', 'ert']
+PPL: 146.0161805947222
+
+Batch 134
+['<|endoftext|>', 'Ġapraxia', 'Ġwith', 'Ġpatients', 'Ġneurological']
+['Ġrelative', 'Ġfaces', 'Ġupright', 'Ġto', 'Ġresponse']
+PPL: 55.09815179140213
+
+Batch 135
+['<|endoftext|>', 'Ġgavage', 'Ġby', 'Ġor', 'ically']
+['Ġ(', 'Ġlatency', 'through', '-', 'Ġstep']
+PPL: 31.049823631062743
+
+Batch 136
+['<|endoftext|>', 's', 'âĢĻ', 'ĠAlzheimer', 'Ġfor']
+['Ġthe', 'Ġat', 'Ġending', 'terminus', '-']
+PPL: 29.62797694135488
+
+Batch 137
+['<|endoftext|>', 'Ġsocial', 'Ġand', 'Ġcognitive', 'Ġsome']
+['Ġ(', 'Ġand', ';', 'Ġexpressed', 'Ġbeing']
+PPL: 25.995764389079405
+
+Batch 138
+['<|endoftext|>', 'Ġstate', 'Ġresting', 'hemispheric', 'ĠInter']
+['Ġbrain', 'Ġwhole', '),', 'Ġsequence', 'ĠEPI']
+PPL: 27.02124661988293
+
+Batch 139
+['<|endoftext|>', 'Ġ;', 'Ġ', ',', 'ĠMartin']
+['.', 'Ġmodel', 'based', '-', 'Ġlearning']
+PPL: 35.57722970454932
+
+Batch 140
+['<|endoftext|>', 'Ġthat', 'Ġarea', 'Ġspecific', 'Ġthe']
+['Ġthe', 'Ġby', 'Ġcomplicated', 'Ġwere', 'Ġthickness']
+PPL: 35.66465345556172
+
+Batch 141
+['<|endoftext|>', 'ĠExperiment', '###', 'Ċ', 'ĠĊĠĠĊ']
+['Ġof', 'âĢĿ', 'Ġscaling', 'adaptive', 'ĠâĢľ']
+PPL: 38.132976236708735
+
+Batch 142
+['<|endoftext|>', 'Ġwho', 'Ġthose', 'Ġto', 'Ġcomparison']
+['ĠThey', '.', 'Ġiron', 'Ġof', 'Ġpaucity']
+PPL: 43.53808632277573
+
+Batch 143
+['<|endoftext|>', 'Ġnucleus', 'Ġtangential', 'Ġthe', 'Ġin']
+['Ġintact', 'Ġthe', 'Ġto', 'Ġcompared', 'Ġside']
+PPL: 24.444201076384395
+
+Batch 144
+['<|endoftext|>', 'Ġsynchronized', 'Ġthat', 'Ġpattern', 'Ġperiodic']
+['Ġsubstantially', 'Ġdiffered', ',', 'Ġderived', 'Ġwere']
+PPL: 24.408641493191546
+
+Batch 145
+['<|endoftext|>', '.', 'Ġexperiments', 'Ġand', 'Ġsimulations']
+['Ġto', 'Ġtethering', 'Ġcovalent', 'Ġpermanent', 'Ġand']
+PPL: 58.002345863908346
+
+Batch 146
+['<|endoftext|>', 'J', 'ĠHZ', 'Ġand', 'NH']
+[')', 's', '(', 'Ġminor', 'Ġand']
+PPL: 15.927035437754554
+
+Batch 147
+['<|endoftext|>', '3', 'ĠB', 'Ġof', 'Ġadministration']
+['Ġsignificantly', 'treatment', '-', 'Ġpre', 'Ġcurcumin']
+PPL: 32.23678821734978
+
+Batch 148
+['<|endoftext|>', 'Ġreports', 'Ġseveral', 'Ġto', 'Ġcontrast']
+['Ġfound', 'Ġwe', ',', 'ĠMoreover', '.']
+PPL: 26.542015339409822
+
+Batch 149
+['<|endoftext|>', 'ĠĠ', 'Ġand', 'ĠĠ', 'Ġ1']
+['Ġthe', 'Ġto', 'Ġsignificance', 'Ġof', 'Ġbe']
+PPL: 28.49583424573219
+
+Batch 150
+['<|endoftext|>', ',', '6', '-', 'ĠIl']
+['Ġsyndrome', 'burg', 'arden', 'ĠWa', 'Ġwith']
+PPL: 37.54549394415209
+
+Batch 151
+['<|endoftext|>', 'ĠYale', "'s", 'ĠChildren', 'Ġthe']
+['Ġcan', 'ĠADHD', 'Ġand', 'ĠTD', 'Ġof']
+PPL: 47.46119337153417
+
+Batch 152
+['<|endoftext|>', 'Ġspot', 'gray', 'Ġ(', '1']
+['.', '2', 'ĠS', 'Ġin', 'Ġparts']
+PPL: 29.501768102269278
+
+Batch 153
+['<|endoftext|>', 'Ġ1', 'positions', 'Ġ(', 'Ġposition']
+['Ġcorrelated', 'Ġsignificantly', 'Ġwere', 'Ġisolation', 'Ġin']
+PPL: 21.994001734721564
+
+Batch 154
+['<|endoftext|>', 'Ġwith', 'Ġdeconvolution', 'Ġby', 'Ġfollowed']
+['Ġ(', 'Ġprojector', 'Ġvideo', 'Ġmodified', 'Ġa']
+PPL: 39.03003336928662
+
+Batch 155
+['<|endoftext|>', 'The', 'Ċ', 'ĠĊĠĠ', 'DBS']
+['We', 'Ċ', 'ĠĊĠĠ', 'Ġlocation', 'Ġand']
+PPL: 30.938241498188738
+
+Batch 156
+['<|endoftext|>', 'Ġtest', 'Ġinhibition', 'pulse', '-']
+['Ġvarious', 'Ġof', 'Ġwaves', 'Ġsine', 'cycle']
+PPL: 30.10304620554873
+
+Batch 157
+['<|endoftext|>', 'Ġ(', 'Ġataxia', 'Ġgait', 'Ġand']
+['Ġwere', 'Ġfindings', 'Ġmain', 'Ġthe', ',']
+PPL: 41.8274346635058
+
+Batch 158
+['<|endoftext|>', 'Ġa', ',', 'ĠInterestingly', 'Ġ).']
+['Ġblood', 'Ġred', 'Ġof', 'Ġmillions', 'Ġof']
+PPL: 54.15298967066154
+
+Batch 159
+['<|endoftext|>', 'P', 'Ċ', 'ĠĊĠĠ', '.']
+['Ġmean', 'Ġfrom', 'Ġor', 'Ġvalues', 'Ġnormative']
+PPL: 38.55589118655684
+
+Batch 160
+['<|endoftext|>', 'Ġcultures', 'Ġcell', 'ĠNeuronal', '.']
+['ĠĠ', 'ĠPten', 'ĠĠ', 'Ġthe', 'Ġof']
+PPL: 24.27518306657522
+
+Batch 161
+['<|endoftext|>', 'Ġin', 'Ġrecorded', 'Ġwere', 'Ġexperiments']
+['Ġin', 'Ġdehydrated', 'Ġwere', 'ĠSamples', '.']
+PPL: 39.54798684846352
+
+Batch 162
+['<|endoftext|>', 'Ġjust', 'Ġnot', 'Ġand', 'Ġresponse']
+['correlation', '-', 'Ġp', 'Ġthe', 'Ġfor']
+PPL: 38.974082407680434
+
+Batch 163
+['<|endoftext|>', 'Ġ)', 'Ġ', 'ĠF', 'Ġ']
+['Ġto', 'Ġuseful', 'Ġextremely', 'Ġis', 'Ġit']
+PPL: 38.03715307384667
+
+Batch 164
+['<|endoftext|>', ')', 'STS', 'Ġ(', 'Ġsulcus']
+['Ġthe', 'Ġthrough', 'Ġtransmitted', 'Ġfirst', 'Ġwas']
+PPL: 25.775285665824416
+
+Batch 165
+['<|endoftext|>', 'al', 'Âł', 'Ġet', 'ĠĠ']
+['Ġitself', 'Ġaging', 'Ġsystemic', 'Ġof', 'Ġregulator']
+PPL: 42.15541089432601
+
+Batch 166
+['<|endoftext|>', 'Ġto', ',', 'Ġspectrum', 'ĠED']
+['Ġ).', 'Ġ', '.,', 'Ġal', 'Ġet']
+PPL: 63.53665923910538
+
+Batch 167
+['<|endoftext|>', 'RI', 'ĠmGlu', 'Ġnot', 'Ġis']
+['Ġ(', 'Asp', '-', 'ĠD', 'Ġin']
+PPL: 18.951847977754053
+
+Batch 168
+['<|endoftext|>', 'Ġhippocampal', 'Ġin', ',', 'ĠSpecifically']
+['.', 'Ġ45', ':', '15', 'ĠG']
+PPL: 12.093497523918108
+
+Batch 169
+['<|endoftext|>', '1', 'Ġ(', ':', 'Ġof']
+['Ġfor', 'Ġcorrected', 'Ġbe', 'Ġmay', 'Ġdata']
+PPL: 43.36432540684842
+
+Batch 170
+['<|endoftext|>', 'ĠĠ', 'Ġcoli', '.', 'ĠE']
+['ĠHB', 'ĠĠ', 'Ġcoli', '.', 'ĠE']
+PPL: 24.43733088697927
+
+Batch 171
+['<|endoftext|>', 'Ġas', 'Ġproduced', 'Ġbeing', 'ĠTau']
+['Ġare', 'ĠWe', '.', 'ĠFTLD', 'Ġwith']
+PPL: 39.67515200488805
+
+Batch 172
+['<|endoftext|>', 'Ġprotocol', 'ĠLFS', 'Ġa', 'Ġof']
+['.', 'Ġalone', 'DOPA', '-', 'ĠL']
+PPL: 14.249785550713533
+
+Batch 173
+['<|endoftext|>', 'Ġneuronal', ')', 'IT', 'A']
+['Ġhave', 'Ġstudies', 'Ġprevious', 'Ġand', 'Ġcharacterized']
+PPL: 59.46169915777364
+
+Batch 174
+['<|endoftext|>', 'ĠGM', 'Ġafter', 'Ġphase', 'Ġearly']
+['Ġinhibitor', 'K', '3', 'ĠPI', 'a']
+PPL: 12.002086150764097
+
+Batch 175
+['<|endoftext|>', 'Ġvolumetric', 'Ġexamines', 'Ġstudy', 'Ġcurrent']
+['Ġin', 'Ġdecreases', 'Ġshow', 'ĠSUD', 'Ġwith']
+PPL: 28.37450221218
+
+Batch 176
+['<|endoftext|>', 'Ġnoted', 'Ġbe', 'Ġshould', 'ĠIt']
+['Ġwritten', 'Ġone', 'Ġof', 'Ġname', 'Ġspoken']
+PPL: 75.73525749585183
+
+Batch 177
+['<|endoftext|>', ',', 'Ġvoxels', 'Ġtwo', 'Ġin']
+['ĠMat', 'Ġand', 'o', 'ink', 'ain']
+PPL: 30.861851608583336
+
+Batch 178
+['<|endoftext|>', 'Ġthe', 'Ġare', 'Ġcytokines', 'Ġkey']
+['ĠE', ',', 'Ġprotein', 'reactive', '-']
+PPL: 15.73062974235235
+
+Batch 179
+['<|endoftext|>', 'Ġlevel', 'Ġtranscript', 'Ġgene', 'Ġcandidate']
+['-', 'ĠQ', 'Ġby', 'quantified', 'Ġ(']
+PPL: 58.983830985587936
+
+Batch 180
+['<|endoftext|>', 'Ġmeasurement', 'Ġthe', 'Ġcomplete', 'Ġto']
+['Ġbe', 'Ġto', 'Ġreported', 'Ġbeen', 'Ġhad']
+PPL: 26.12017354907774
+
+Batch 181
+['<|endoftext|>', 'Ġpeak', 'Ġbetween', 'Ġrelationship', 'Ġthe']
+['Ġand', ',', 'Ġb', ',', 'Ġa']
+PPL: 15.145357420673784
+
+Batch 182
+['<|endoftext|>', 'Ġof', 'Ġcompliance', 'allowing', 'sw']
+['Ġpre', 'Ġin', 'Ġswallowing', 'Ġof', 'Ġrepresentations']
+PPL: 46.316679642475215
+
+Batch 183
+['<|endoftext|>', 'Ġdoes', 'Ġso', 'Ġbut', ',']
+['Ġwhat', 'Ġof', 'Ġcalculation', 'Ġthe', '.,']
+PPL: 76.52816799469275
+
+Batch 184
+['<|endoftext|>', 'Ġdyad', 'Ġthe', ',', 'ĠEspecially']
+['Ġfor', 'al', 'Ġarsen', 'Ġmedicinal', 'Ġthe']
+PPL: 85.46889786601429
+
+Batch 185
+['<|endoftext|>', 'azol', 'ost', 'Ġcil', ',']
+['Ġburden', 'Ġreduced', 'Ġwith', 'Ġimproved', 'Ġdeficits']
+PPL: 42.25577519473337
+
+Batch 186
+['<|endoftext|>', 'G', 'Ġ(', 'ĠĠ', '.']
+['ĠImmunofluorescence', 'ĠĠ', ')', 'A', 'Ġ(']
+PPL: 25.77812495402125
+
+Batch 187
+['<|endoftext|>', 'Ġthey', ',', 'Ġdisease', 'Ġneurodegenerative']
+['Ġ(', 'Ġvirus', 'Ġinfluenza', 'The', 'Ċ']
+PPL: 68.24303583847687
+model_results/gpt2_scratch_neuro_tokenizer_bayes_rev/human_abstracts

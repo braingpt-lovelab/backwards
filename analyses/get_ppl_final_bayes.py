@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from utils import model_utils
 
 """
-Run the saved models on a validation data to get distribution of PPLs.
+Run the saved models on a dataset (train or validation) to get distribution of PPLs.
 """
 
 def collate_fn(batch):
@@ -28,12 +28,6 @@ def collate_fn(batch):
     attention_masks = torch.tensor(attention_masks)
     labels = torch.tensor(labels)
 
-    # No need to pad anything; handled by `caching_tokenized_dataset.py`
-    # If got error means we made a mistake somehow...
-    # labels = pad_sequence(input_ids, batch_first=True, padding_value=-1)
-    # input_ids = pad_sequence(input_ids, batch_first=True, padding_value=0)
-    # attention_masks = pad_sequence(attention_masks, batch_first=True, padding_value=0)
-    
     return {
         "input_ids": input_ids,
         "attention_mask": attention_masks, 
@@ -41,10 +35,13 @@ def collate_fn(batch):
     }
 
 
-def evaluate(LLM, valid_dataloader, tokenizer):
+def evaluate(LLM, dataloader, tokenizer):
     all_batches_ppl = []
-    for i, batch in enumerate(valid_dataloader):
-        # print(f"Batch {i}/{len(valid_dataloader)}")
+    for i, batch in enumerate(dataloader):
+        # Plot the first and last 5 tokens
+        print(f"\nBatch {i}")
+        print(f"{tokenizer.convert_ids_to_tokens(batch['input_ids'][0][:5])}")
+        print(f"{tokenizer.convert_ids_to_tokens(batch['input_ids'][0][-5:])}")
         with torch.cuda.amp.autocast():
             labels = batch["labels"].to(LLM.device)
             batch = {
@@ -55,50 +52,50 @@ def evaluate(LLM, valid_dataloader, tokenizer):
             labels = labels[..., 1:].contiguous()
 
             # Compute loss
-            # - flatten logits and labels
             logits = logits.view(-1, logits.size(-1))
             labels = labels.view(-1)
 
-            # - logsoftmax must ignore the BOS column
             mask = torch.zeros_like(logits)
             bos_token_id = tokenizer.bos_token_id
-            mask[:, bos_token_id] = float('-inf')  # Set the BOS column logits to -inf
+            mask[:, bos_token_id] = float('-inf')
             masked_logits = logits + mask
 
-            # Softmax and compute loss
             log_probs = torch.nn.functional.log_softmax(masked_logits, dim=-1)
             true_log_probs = log_probs.gather(dim=-1, index=labels.unsqueeze(-1)).squeeze(-1).float()
             loss = -true_log_probs.mean()
             ppl = math.exp(loss.item())
+            print(f"PPL: {ppl}")
             all_batches_ppl.append(ppl)
 
     return all_batches_ppl
 
 
-
-def main(llm):
+def main(llm, dataset_type, sample_percentage):
     config_fpath = os.path.join(configs_dir, f"{llm}.json")
     with open(config_fpath, "r") as f:
         args = json.load(f)
 
-    # Override a few things using full path.
-    args["cache_dir_validation"] = os.path.join(reference_dir, args["cache_dir_validation"])
+    args["cache_dir"] = os.path.join(reference_dir, args["cache_dir_validation"])
     if "backwards" in llm:
         tokenizer_dir = "cache/gpt2_neuro_tokenizer_backwards"
     else:
         tokenizer_dir = "cache/gpt2_neuro_tokenizer"
     args["custom_tokenizer"] = os.path.join(reference_dir, tokenizer_dir)
     args["spt"] = ""
-    args["batch_size"] = 1  # for building distribution of ppl
+    args["batch_size"] = 1
     args = argparse.Namespace(**args)
 
-    # Load validation data
-    tokenized_dataset = {
-        "validation": datasets.Dataset.load_from_disk(args.cache_dir_validation),
-    }
-    print("Loading {} samples for validation".format(len(tokenized_dataset["validation"])))
-    valid_dataloader = DataLoader(
-        tokenized_dataset["validation"],
+    # Load dataset
+    dataset = datasets.Dataset.load_from_disk(args.cache_dir)
+    if dataset_type == "train":
+        if sample_percentage < 1.0:
+            dataset = dataset.shuffle(seed=42).select(
+                range(int(len(dataset) * sample_percentage))
+            )
+
+    print(f"Loading {len(dataset)} samples for {dataset_type}")
+    dataloader = DataLoader(
+        dataset,
         batch_size=args.batch_size,
         collate_fn=collate_fn,
     )
@@ -110,12 +107,12 @@ def main(llm):
     criterion = torch.nn.CrossEntropyLoss(ignore_index=-1)
     with torch.no_grad():
         LLM.eval()
-        all_batches_ppl = evaluate(LLM, valid_dataloader, tokenizer)
+        all_batches_ppl = evaluate(LLM, dataloader, tokenizer)
     
-    # Save per llm all batches ppl
+    # Save results
     print(results_dir)
     np.save(
-        os.path.join(results_dir, f"all_batches_ppl_validation.npy"),
+        os.path.join(results_dir, f"all_batches_ppl_{dataset_type}.npy"),
         np.array(all_batches_ppl)
     )
         
@@ -123,18 +120,21 @@ def main(llm):
 if __name__ == "__main__":
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--use_human_abstract", type=str, default="True")
+    parser.add_argument("--dataset_type", type=str, choices=["train", "validation"], default="validation")
+    parser.add_argument("--sample_percentage", type=float, default=0.02, help="Percentage of train dataset to sample (only applicable if dataset_type is 'train')")
 
-    if parser.parse_args().use_human_abstract == "True":
-        use_human_abstract = True
-    else:
-        use_human_abstract = False
+    args = parser.parse_args()
+
+    use_human_abstract = args.use_human_abstract.lower() == "true"
+    dataset_type = args.dataset_type
+    sample_percentage = args.sample_percentage
 
     llms = [
-        "gpt2_scratch_neuro_tokenizer_bayes_fwd",
+        # "gpt2_scratch_neuro_tokenizer_bayes_fwd",
         "gpt2_scratch_neuro_tokenizer_bayes_rev",
     ]
 
@@ -152,4 +152,4 @@ if __name__ == "__main__":
             os.makedirs(results_dir)
             results_dir = "model_results"
 
-        main(llm)
+        main(llm, dataset_type, sample_percentage)
