@@ -1,0 +1,14 @@
+1. batch_size=1 and manual average != wandb final val 
+    - (evaluate() is different from train_bayes.py)
+
+2. change to evaluate() the same as train_bayes.py makes the val PPL diff a lot 
+smaller but still different.
+
+3. use accelerator to do evaluate() produces identical results.
+
+4. use accelerator but set ngpu=1 produces same as 2.
+    - in 3, each rank has 148 batches (148*4 = 592 batches), 148*4*16 > 9413
+    - in 2 & 4, we have ceiling(9413 / 16) = 589 batches
+
+5. 9413 / 16 / 4 = 147.078
+    - accelerator.prepare uses 148 when ngpu=4
