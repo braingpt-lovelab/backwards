@@ -118,6 +118,22 @@ def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
         model = AutoModelForCausalLM.from_config(model_config).to('cuda')
         tokenizer = transformers.GPT2Tokenizer.from_pretrained(model_name)
 
+    # Load bayes fwd/rev models
+    elif "bayes" in model_fpath:
+        model_fpath = f"/home/ken/projects/backwards/model_training/exp/{model_fpath}/checkpoint.4"
+        print("Loading GPT2 model from", model_fpath)
+        model = transformers.GPT2LMHeadModel.from_pretrained(
+            model_fpath,
+            load_in_8bit=load_in_8bit,
+            device_map='auto',
+            trust_remote_code=True,
+            torch_dtype=torch_dtype
+        )
+
+        tokenizer = transformers.GPT2Tokenizer.from_pretrained(
+            model_fpath,    
+        )
+
     # Load pretrained model
     else:
         model = transformers.AutoModelForCausalLM.from_pretrained(

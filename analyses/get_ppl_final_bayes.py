@@ -41,15 +41,15 @@ def collate_fn(batch):
     }
 
 
-def evaluate(args, LLM, valid_dataloader, criterion, tokenizer):
+def evaluate(LLM, valid_dataloader, tokenizer):
     all_batches_ppl = []
     for i, batch in enumerate(valid_dataloader):
-        print(f"Batch {i}/{len(valid_dataloader)}")
+        # print(f"Batch {i}/{len(valid_dataloader)}")
         with torch.cuda.amp.autocast():
-            labels = batch["labels"]
+            labels = batch["labels"].to(LLM.device)
             batch = {
-                "input_ids": batch["input_ids"], 
-                "attention_mask": batch["attention_mask"]
+                "input_ids": batch["input_ids"].to(LLM.device), 
+                "attention_mask": batch["attention_mask"].to(LLM.device)
             }
             logits = LLM(**batch).logits[..., :-1, :].contiguous()
             labels = labels[..., 1:].contiguous()
@@ -82,7 +82,7 @@ def main(llm):
         args = json.load(f)
 
     # Override a few things using full path.
-    args["cache_dir"] = os.path.join(reference_dir, args["cache_dir"])
+    args["cache_dir_validation"] = os.path.join(reference_dir, args["cache_dir_validation"])
     if "backwards" in llm:
         tokenizer_dir = "cache/gpt2_neuro_tokenizer_backwards"
     else:
@@ -97,7 +97,6 @@ def main(llm):
         "validation": datasets.Dataset.load_from_disk(args.cache_dir_validation),
     }
     print("Loading {} samples for validation".format(len(tokenized_dataset["validation"])))
-    tokenized_dataset.set_format("torch")
     valid_dataloader = DataLoader(
         tokenized_dataset["validation"],
         batch_size=args.batch_size,
@@ -105,15 +104,16 @@ def main(llm):
     )
 
     # Load model
-    LLM, _ = model_utils.load_model_and_tokenizer(llm)
+    LLM, tokenizer = model_utils.load_model_and_tokenizer(llm)
 
     # Run model on data to get ppl
     criterion = torch.nn.CrossEntropyLoss(ignore_index=-1)
     with torch.no_grad():
         LLM.eval()
-        all_batches_ppl = evaluate(args, LLM, valid_dataloader, criterion)
+        all_batches_ppl = evaluate(LLM, valid_dataloader, tokenizer)
     
     # Save per llm all batches ppl
+    print(results_dir)
     np.save(
         os.path.join(results_dir, f"all_batches_ppl_validation.npy"),
         np.array(all_batches_ppl)
