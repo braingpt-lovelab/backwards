@@ -215,10 +215,10 @@ def main(args, world_size):
         optimizer.zero_grad()
         for i, batch in enumerate(train_dataloader):
             # Adhoc distruption for debugging
-            # if epoch == 0 and i == 100:
+            # if epoch == 1 and i == 100:
             #     early_stop_flag = True
             #     break
-            if epoch == 0 and i == 260:
+            if epoch == 1 and i == 260:
                 early_stop_flag = True
                 break
 
