@@ -2,28 +2,16 @@ import os
 import random
 import argparse
 import math
-import pickle
 import time
 import json
-import itertools
-from collections import OrderedDict
 
 import numpy as np
 import torch
-import torch.distributed as dist
-import torch.multiprocessing as mp
-from torch.nn.utils.rnn import pad_sequence
-from torch.nn.parallel import DistributedDataParallel as DDP
-from torch.utils.data.distributed import DistributedSampler
-from torch.distributed import init_process_group, destroy_process_group
-from tqdm import tqdm
 from transformers import AutoTokenizer
 from transformers import AutoModelForCausalLM
-from transformers import SchedulerType, AdamW, get_scheduler
+from transformers import SchedulerType, get_scheduler
 import wandb
 import datasets
-from datasets import load_dataset
-from transformers import DataCollatorForLanguageModeling
 from accelerate import Accelerator
 from torch.utils.data import DataLoader
 from transformers import AutoConfig
@@ -76,7 +64,7 @@ def load_checkpoint(num_steps_per_epoch):
     )
 
     latest_checkpoint = os.path.join(args.outputdir, checkpoint_dirs[0])
-    print(f"Resuming training from checkpoint: {latest_checkpoint}")
+    logging(f"Resuming training from checkpoint: {latest_checkpoint}", args.logfile)
     
     # Get the epoch and step from the checkpoint file
     checkpoint_epoch = int(checkpoint_dirs[0].split(".")[1].split("_")[0])
@@ -95,7 +83,7 @@ def load_checkpoint(num_steps_per_epoch):
     else:
         start_epoch = checkpoint_epoch
     
-    print(f"Resumed training from epoch {start_epoch}, step {start_step}")
+    logging(f"Resumed training from epoch {start_epoch}, step {start_step}", args.logfile)
     return start_epoch, start_step
 
 
@@ -121,8 +109,8 @@ def save_checkpoint(LLM, tokenizer, epoch, step, end_of_epoch=False):
         logging(f"End of epoch checkpoint saved to {ckpt_dir}, AFTER epoch {epoch}", args.logfile)
 
 
-def main(rank, args, world_size):
-    print(f"\nrank: {accelerator.process_index}")
+def main(args, world_size):
+    logging(f"\nrank: {accelerator.process_index}", args.logfile)
 
     # Save model configuration
     with open(os.path.join(args.outputdir, 'model_config.json'), 'w') as f:
@@ -130,10 +118,10 @@ def main(rank, args, world_size):
 
     # Load tokenizer
     if args.custom_tokenizer != "None":
-        print(f"Load custom tokenizer from {args.custom_tokenizer}")
+        logging(f"Load custom tokenizer from {args.custom_tokenizer}", args.logfile)
         tokenizer = AutoTokenizer.from_pretrained(args.custom_tokenizer, cache_dir=args.cache_dir)
     else:
-        print(f"Load pretrained tokenizer")
+        logging(f"Load pretrained tokenizer", args.logfile)
         tokenizer = AutoTokenizer.from_pretrained(args.model_path, cache_dir=args.cache_dir)
 
     tokenized_dataset = {
@@ -141,9 +129,9 @@ def main(rank, args, world_size):
         "validation": datasets.Dataset.load_from_disk(args.cache_dir_validation),
     }
 
-    print(tokenized_dataset)
-    logging("Loading {} samples for training".format(len(tokenized_dataset["train"])), args.logfile)
-    logging("Loading {} samples for validation".format(len(tokenized_dataset["validation"])), args.logfile)
+    logging(f"{tokenized_dataset}", args.logfile)
+    logging(f"Loading {len(tokenized_dataset['train'])} samples for training", args.logfile)
+    logging(f"Loading {len(tokenized_dataset['validation'])} samples for validation", args.logfile)
 
     train_generator = torch.Generator()
     train_generator.manual_seed(args.random_seed)
@@ -163,38 +151,22 @@ def main(rank, args, world_size):
 
     # Define model
     if args.train_mode == "scratch":
-        print(f"Train from scratch")
+        logging(f"Train from scratch", args.logfile)
         model_config = AutoConfig.from_pretrained(args.model_path)
         # Update vocab size if using custom tokenizer
         if args.custom_tokenizer != "None":
             model_config.vocab_size = tokenizer.vocab_size
-
-
-
-
-        # # DEBUG: disable all dropout
-        # model_config.attn_pdrop = 0
-        # model_config.resid_pdrop = 0
-        # model_config.embd_pdrop = 0
-        # model_config.summary_first_dropout = 0
-        
-
-
-
         LLM = AutoModelForCausalLM.from_config(model_config)
 
     elif args.train_mode == "finetune":
-        print(f"Finetune from {args.model_path}")
+        logging(f"Finetune from {args.model_path}", args.logfile)
         LLM = AutoModelForCausalLM.from_pretrained(args.model_path, cache_dir=args.cache_dir)
         if args.custom_tokenizer != "None":
             raise ValueError("Bad idea to use custom tokenizer for finetuning?")
     else:
         raise ValueError("Invalid train mode")
 
-    ## Initialise criterion and optimiser
-    criterion = torch.nn.CrossEntropyLoss(ignore_index=-1)
-
-    ## Optimiser
+    # Optimiser
     no_decay = ["bias", "LayerNorm.weight"]
     optimizer_grouped_parameters = [
         {
@@ -209,16 +181,15 @@ def main(rank, args, world_size):
     optimizer = torch.optim.AdamW(optimizer_grouped_parameters, lr=args.learning_rate)
 
     # Scheduler and math around the number of training steps.
-    num_steps_per_epoch = len(train_dataloader)
-    num_update_steps_per_epoch = math.ceil(num_steps_per_epoch / args.gradient_accumulation_steps)
-    max_train_steps = args.num_train_epochs * num_update_steps_per_epoch
-    num_warmup_steps = args.num_warmup_steps * max_train_steps
-
+    # (done before prepare, ref: https://github.com/huggingface/accelerate/blob/main/examples/by_feature/checkpointing.py#L173C3-L178C6)
+    num_training_steps = math.ceil(len(train_dataloader) / args.gradient_accumulation_steps) * args.num_train_epochs
+    print(f"len(train_dataloader) = {len(train_dataloader)}")
+    num_warmup_steps = args.num_warmup_steps * num_training_steps
     lr_scheduler = get_scheduler(
         name=args.lr_scheduler_type,
         optimizer=optimizer,
         num_warmup_steps=num_warmup_steps,
-        num_training_steps=max_train_steps,
+        num_training_steps=num_training_steps,
     )
     
     LLM, optimizer, train_dataloader, valid_dataloader, lr_scheduler = accelerator.prepare(
@@ -227,6 +198,8 @@ def main(rank, args, world_size):
     start_epoch = 0
     start_step = 0
     best_val_loss = float('inf')
+    num_steps_per_epoch = len(train_dataloader)  # per GPU
+    print(f"After prepare, len(train_dataloader) = {len(train_dataloader)}")
     if args.resume_from_checkpoint:
         start_epoch, start_step = load_checkpoint(num_steps_per_epoch)
     
@@ -249,7 +222,7 @@ def main(rank, args, world_size):
                 early_stop_flag = True
                 break
 
-            step = (epoch * num_steps_per_epoch) + i
+            step = (epoch * num_steps_per_epoch) + i  # global step wrt per GPU
 
             logging(f"\nrank {accelerator.process_index} | epoch {epoch} | step {step} | batch {i}", args.logfile)
             logging(f"\n\nRunning epoch {epoch}, step {step}, batch {i}", args.logfile)
@@ -320,7 +293,7 @@ def main(rank, args, world_size):
 
                 LLM.eval()
                 with torch.no_grad():
-                    val_loss = evaluate(args, LLM, valid_dataloader, criterion, tokenizer)
+                    val_loss = evaluate(LLM, valid_dataloader, tokenizer)
                     current_lr = optimizer.param_groups[0]["lr"]
                     torch.distributed.reduce(val_loss, 0)
                     val_loss = val_loss / world_size
@@ -340,7 +313,7 @@ def main(rank, args, world_size):
         if i == len(train_dataloader) - 1:
             LLM.eval()
             with torch.no_grad():
-                val_loss = evaluate(args, LLM, valid_dataloader, criterion, tokenizer)
+                val_loss = evaluate(LLM, valid_dataloader, tokenizer)
                 current_lr = optimizer.param_groups[0]["lr"]
                 torch.distributed.reduce(val_loss, 0)
                 val_loss = val_loss / world_size
@@ -357,7 +330,7 @@ def main(rank, args, world_size):
         LLM.train()
 
 
-def evaluate(args, LLM, valid_dataloader, criterion, tokenizer):
+def evaluate(LLM, valid_dataloader, tokenizer):
     total_tokens = 0
     total_loss = 0.
     for i, batch in enumerate(valid_dataloader):
@@ -488,12 +461,6 @@ if __name__ == "__main__":
         help="Saving interval",
     )
     parser.add_argument(
-        "--master_port",
-        type=str,
-        default='12355',
-        help="Master port number",
-    )
-    parser.add_argument(
         "--train_mode",
         type=str,
         default='scratch',
@@ -550,7 +517,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
     world_size = torch.cuda.device_count()
-    print(world_size)
+    logging(f"{world_size}", args.logfile)
 
     accelerator = Accelerator(
         log_with="wandb", 
@@ -607,5 +574,5 @@ if __name__ == "__main__":
     torch.manual_seed(args.random_seed)
     torch.cuda.manual_seed_all(args.random_seed)
 
-    main(0, args, world_size)
+    main(args, world_size)
     accelerator.end_training()
