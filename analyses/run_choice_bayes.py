@@ -11,21 +11,16 @@ from utils import model_utils
 from utils import general_utils
 
 
-def forward_pass(model, tokenizer, choices, add_noise=False, noise_bound=1e-5, seed=42):
+def forward_pass(model, tokenizer, choices):
     """
     Args:
         - choices (list): list of strings, where each string is a prompt
-        - add_noise (bool): whether to add random noise to logits
-        - noise_bound (float): upper bound of uniform noise
-        - seed (int): random seed for noise generation
 
     Perform a single forward pass over a testcase 
     (i.e., a prompt with choices) and computes perplexities
     for each choice.
     """
-    # Set seed for reproducibility of noise
-    torch.manual_seed(seed)
-    
+    # Forward pass to get nll and convert to ppl
     ppl = []
     for choice_index, prompt in enumerate(choices):
         with torch.no_grad():
@@ -63,12 +58,6 @@ def forward_pass(model, tokenizer, choices, add_noise=False, noise_bound=1e-5, s
             mask[:, bos_token_id] = float('-inf')  # Set the BOS column logits to -inf
             masked_shift_logits = shift_logits + mask
             
-            # Add symmetric uniform random noise if enabled
-            if add_noise:
-                # Generate noise in range [-noise_bound, noise_bound]
-                noise = torch.rand_like(masked_shift_logits) * (2 * noise_bound) - noise_bound
-                masked_shift_logits = masked_shift_logits + noise
-            
             # - Softmax and compute loss
             log_probs = torch.nn.functional.log_softmax(masked_shift_logits, dim=-1)
             true_log_probs = log_probs.gather(dim=-1, index=shift_labels.unsqueeze(-1)).squeeze(-1).float()
@@ -78,7 +67,7 @@ def forward_pass(model, tokenizer, choices, add_noise=False, noise_bound=1e-5, s
 
 
 @general_utils.timer
-def main(llm, abstracts_fpath, add_noise, noise_bound, seed):
+def main(llm, abstracts_fpath):
     np.random.seed(42)
 
     # Load model, tokenizer
@@ -114,7 +103,7 @@ def main(llm, abstracts_fpath, add_noise, noise_bound, seed):
         )
 
         # Forward each prompt to get nll and convert to ppl
-        ppl = forward_pass(model, tokenizer, choices, add_noise, noise_bound, seed)
+        ppl = forward_pass(model, tokenizer, choices)
         PPL_A_and_B.append(ppl)
         true_labels.append(0 if choice_true == "A" else 1)
 
@@ -139,10 +128,8 @@ def main(llm, abstracts_fpath, add_noise, noise_bound, seed):
     acc = np.sum(pred_labels == true_labels) / (PPL_A_and_B.shape[0])
     print(f"Accuracy: {acc}")
 
-    # Modified file names to include seed and noise bound
-    noise_str = f"_noise_{noise_bound}_seed_{seed}" if add_noise else ""
-    np.save(f"{results_dir}/PPL_A_and_B{noise_str}.npy", PPL_A_and_B)
-    np.save(f"{results_dir}/labels{noise_str}.npy", true_labels)
+    np.save(f"{results_dir}/PPL_A_and_B.npy", PPL_A_and_B)
+    np.save(f"{results_dir}/labels.npy", true_labels)
 
 
 if __name__ == "__main__":
@@ -151,25 +138,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--use_human_abstract", type=str, default="True")
-    parser.add_argument("--add_noise", type=str, default="False")
-    parser.add_argument("--noise_bound", type=float, default=1e-5)
-    parser.add_argument("--seed", type=int, default=42)
 
-    args = parser.parse_args()
-    
-    if args.use_human_abstract == "True":
+    if parser.parse_args().use_human_abstract == "True":
         use_human_abstract = True
     else:
         use_human_abstract = False
-        
-    if args.add_noise == "True":
-        add_noise = True
-    else:
-        add_noise = False
 
     llms = [
         "gpt2_scratch_neuro_tokenizer_bayes_fwd",
-        # "gpt2_scratch_neuro_tokenizer_bayes_rev",
+        "gpt2_scratch_neuro_tokenizer_bayes_rev",
     ]
 
     for llm in llms:
@@ -184,4 +161,5 @@ if __name__ == "__main__":
         if not os.path.exists(results_dir):
             os.makedirs(results_dir)
 
-        main(llm, abstracts_fpath, add_noise, args.noise_bound, args.seed)
+        main(llm, abstracts_fpath)
+    
