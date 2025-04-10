@@ -145,8 +145,10 @@ if __name__ == "__main__":
         use_human_abstract = False
 
     llms = [
-        "gpt2_scratch_neuro_tokenizer_bayes_fwd",
-        "gpt2_scratch_neuro_tokenizer_bayes_rev",
+        # "gpt2_scratch_neuro_tokenizer_bayes_fwd",
+        # "gpt2_scratch_neuro_tokenizer_bayes_rev",
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed2",
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed3",
     ]
 
     for llm in llms:

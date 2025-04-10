@@ -37,6 +37,7 @@ def collate_fn(batch):
 
 def evaluate(LLM, dataloader, tokenizer):
     all_batches_ppl = []
+    all_batches_tokens_n_ppls = {}
     for i, batch in enumerate(dataloader):
         # Plot the first and last 5 tokens
         print(f"\nBatch {i}")
@@ -66,8 +67,15 @@ def evaluate(LLM, dataloader, tokenizer):
             ppl = math.exp(loss.item())
             print(f"PPL: {ppl}")
             all_batches_ppl.append(ppl)
+        
+        # Save each batch's tokens and ppls for further text analysis
+        all_batches_tokens_n_ppls[i] = {
+            "tokens": tokenizer.convert_ids_to_tokens(batch["input_ids"][0]),
+            "logprobs": true_log_probs.tolist(),
+            "ppl": ppl,
+        }
 
-    return all_batches_ppl
+    return all_batches_ppl, all_batches_tokens_n_ppls
 
 
 def main(llm, dataset_type, sample_percentage):
@@ -112,7 +120,7 @@ def main(llm, dataset_type, sample_percentage):
     criterion = torch.nn.CrossEntropyLoss(ignore_index=-1)
     with torch.no_grad():
         LLM.eval()
-        all_batches_ppl = evaluate(LLM, dataloader, tokenizer)
+        all_batches_ppl, all_batches_tokens_n_ppls = evaluate(LLM, dataloader, tokenizer)
     
     # Save results
     print(results_dir)
@@ -120,6 +128,9 @@ def main(llm, dataset_type, sample_percentage):
         os.path.join(results_dir, f"all_batches_ppl_{dataset_type}.npy"),
         np.array(all_batches_ppl)
     )
+
+    with open(os.path.join(results_dir, f"all_batches_tokens_n_logprobs_n_ppls_{dataset_type}.json"), "w") as f:
+        json.dump(all_batches_tokens_n_ppls, f, indent=4)
         
 
 if __name__ == "__main__":
@@ -139,8 +150,10 @@ if __name__ == "__main__":
     sample_percentage = args.sample_percentage
 
     llms = [
-        "gpt2_scratch_neuro_tokenizer_bayes_fwd",
+        # "gpt2_scratch_neuro_tokenizer_bayes_fwd",
         # "gpt2_scratch_neuro_tokenizer_bayes_rev",
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed2",
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed3",
     ]
 
     reference_dir = "/home/ken/projects/backwards/model_training"
