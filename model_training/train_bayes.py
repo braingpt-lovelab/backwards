@@ -419,6 +419,12 @@ if __name__ == "__main__":
         help="Reverse the training sequence",
     )
     parser.add_argument(
+        "--permuted_training",
+        type=utils.str_to_bool,
+        default=False,
+        help="Permute the training sequence",
+    )
+    parser.add_argument(
         "--cache_dir_train",
         type=str,
         default=None,

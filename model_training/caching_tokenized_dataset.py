@@ -1,4 +1,5 @@
 import itertools
+import numpy as np
 from types import SimpleNamespace
 import os
 import datasets
@@ -25,11 +26,30 @@ def tokenize(element, tokenizer, args):
     output_mask = [output_mask[x:x+args.chunk_size-1] for x in range(0, len(output_mask), args.chunk_size-1)]
 
     # Prepend BOS token to each chunk regardless of training direction;
-    # if reversed training, first reverse and then prepend BOS
+    # if reversed training, first reverse and then prepend BOS,
+    # if permuted training, first permute and then prepend BOS.
     if args.reversed_training:
         print("Reversing chunk...")
         output_ids = [chunk[::-1] for chunk in output_ids]
         output_mask = [chunk[::-1] for chunk in output_mask]
+    elif args.permuted_training:
+        print("Permuting chunk...")
+        output_ids_permuted = []
+        output_mask_permuted = []
+        for chunk in output_ids:
+            # Same randomness per chunk
+            np.random.seed(args.random_seed)
+            permuted_chunk = np.random.permutation(chunk)
+            output_ids_permuted.append(list(permuted_chunk))
+        for chunk in output_mask:
+            # Same randomness per chunk
+            np.random.seed(args.random_seed)
+            permuted_chunk = np.random.permutation(chunk)
+            output_mask_permuted.append(list(permuted_chunk))
+        output_ids = output_ids_permuted
+        output_mask = output_mask_permuted
+    else:
+        raise ValueError("Invalid training direction. Must be either reversed or permuted.")
     bos_id = tokenizer.bos_token_id
     output_ids = [[bos_id] + chunk for chunk in output_ids]
     output_mask = [[1] + chunk for chunk in output_mask]
@@ -41,6 +61,14 @@ def first_map_then_remove_last(config_fpath):
     args = utils.load_config(config_fpath)
     args = SimpleNamespace(**args)
     print(args)
+
+    # If `args.cache_dir_train` and `args.cache_dir_validation` exist,
+    # do nothing.
+    if os.path.exists(args.cache_dir_train) \
+        and os.path.exists(args.cache_dir_validation):
+        print(f"\n\nCache already exists at {args.cache_dir_train} and {args.cache_dir_validation}.")
+        print("Exiting...\n\n")
+        return None, None
 
     # Load huggingface dataset
     dataset = load_dataset(args.data_path, cache_dir=args.cache_dir)
@@ -119,9 +147,9 @@ def load_from_arrow_dir(config_fpath):
 
 
 if __name__ == "__main__":
-    config_fpath = "configs/gpt2_scratch_neuro_tokenizer_bayes_fwd_mini.json"  ### _fwd | _rev
+    config_fpath = "configs/gpt2_scratch_neuro_tokenizer_bayes_perm.json"  ### _fwd | _rev | _perm
     tokenized_dataset, tokenizer = first_map_then_remove_last(config_fpath)  ### Use once!
-    # tokenized_dataset, tokenizer = load_from_arrow_dir(config_fpath)  ### comment out ONLY dir exists.
+    tokenized_dataset, tokenizer = load_from_arrow_dir(config_fpath)  ### comment out ONLY dir exists.
 
     # Testing
     print(tokenized_dataset)
