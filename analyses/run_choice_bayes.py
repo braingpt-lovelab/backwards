@@ -28,9 +28,30 @@ def forward_pass(model, tokenizer, choices):
 
             # Apply bayes-unique data processing
             # 1) if `rev` in model name, reverse the token ids
-            # 2) always add bos_token_id to the beginning of the input_ids
+            # 2) if `perm` in model name, get the sequence length, pad to max length-1
+            #    and permute the token ids based on seed=1, and keep only the first 
+            #    sequence length number of tokens.
+            # 3) always add bos_token_id to the beginning of the input_ids
             if "rev" in llm:
                 prompt["input_ids"] = torch.flip(prompt["input_ids"], dims=[1])
+
+            elif "perm" in llm:
+                # Get the sequence length
+                seq_len = prompt["input_ids"].shape[1]
+                # print(f"seq_len: {seq_len}")
+                # Pad to max length-1
+                max_length_minus1 = model.config.n_positions - 1
+                pad_length = max_length_minus1 - seq_len
+                # print(f"max_length_minus1: {max_length_minus1}, pad_length: {pad_length}")
+                prompt["input_ids"] = F.pad(prompt["input_ids"], (0, pad_length), value=tokenizer.pad_token_id)
+                # Permute the token ids based on seed=1
+                np.random.seed(1)
+                permuted_indices = np.random.permutation(max_length_minus1)
+                prompt["input_ids"] = prompt["input_ids"][:, permuted_indices]
+                # Keep only the first seq_len number of tokens
+                prompt["input_ids"] = prompt["input_ids"][:, :seq_len]
+                # print(f"len after permute: {prompt['input_ids'].shape[1]}")
+
             bos_token_id = tokenizer.bos_token_id
             prompt["input_ids"] = torch.cat(
                 [torch.tensor([[bos_token_id]]).to("cuda"), prompt["input_ids"]], dim=1
@@ -63,6 +84,7 @@ def forward_pass(model, tokenizer, choices):
             true_log_probs = log_probs.gather(dim=-1, index=shift_labels.unsqueeze(-1)).squeeze(-1).float()
             nll = -true_log_probs.mean()
             ppl.append(np.exp(nll.item()))
+    print(f"ppl = {ppl}")
     return ppl
 
 
@@ -95,11 +117,6 @@ def main(llm, abstracts_fpath):
         # where each prompt is the question + one of the abstracts as option.
         choices = data_utils.prepare_prompt_multiple_choice_harness(
             original_abstract, incorrect_abstract, prompt_template, 
-        )
-
-        print(
-            f"-"*70 + "\n",
-            f"*** Abstract index: {abstract_index} ***",
         )
 
         # Forward each prompt to get nll and convert to ppl
@@ -135,6 +152,7 @@ def main(llm, abstracts_fpath):
 if __name__ == "__main__":
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--use_human_abstract", type=str, default="True")
@@ -147,8 +165,19 @@ if __name__ == "__main__":
     llms = [
         # "gpt2_scratch_neuro_tokenizer_bayes_fwd",
         # "gpt2_scratch_neuro_tokenizer_bayes_rev",
-        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed2",
-        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed3",
+        # "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed2",
+        # "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed3",
+        "gpt2_scratch_neuro_tokenizer_bayes_perm",
+        # "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd",
+        # "gpt2-medium_scratch_neuro_tokenizer_bayes_rev",
+        # "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed2",
+        # "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed3",
+        # "gpt2-medium_scratch_neuro_tokenizer_bayes_perm",
+        # "gpt2-large_scratch_neuro_tokenizer_bayes_fwd",
+        # "gpt2-large_scratch_neuro_tokenizer_bayes_rev",
+        # "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed2",
+        # "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed3",
+        # "gpt2-large_scratch_neuro_tokenizer_bayes_perm",
     ]
 
     for llm in llms:

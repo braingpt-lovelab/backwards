@@ -3,58 +3,46 @@ import torch
 
 model_list = {
     "gpt2": {
-        "gpt2_scratch_neuro_tokenizer": {
-            "llm": "GPT2-124M",
-            "color": '#758EB7',
-            "alpha": 0.8,
-            "hatch": "",
-        },
-        "gpt2_scratch_neuro_tokenizer_backwards": {
-            "llm": "GPT2-124M (backward)",
-            "color": '#758EB7',
-            "alpha": 0.8,
-            "hatch": "\\",
-        },
         "gpt2_scratch_neuro_tokenizer_bayes_fwd": {
-            "llm": "GPT2-124M (bayes fwd)",
+            "llm": "GPT2-124M (fwd)",
             "color": '#758EB7',
             "alpha": 0.8,
             "hatch": "",
         },
         "gpt2_scratch_neuro_tokenizer_bayes_rev": {
-            "llm": "GPT2-124M (bayes rev)",
+            "llm": "GPT2-124M (rev)",
             "color": '#758EB7',
             "alpha": 0.8,
             "hatch": "\\",
         }
     },
     "gpt2-medium": {
-        "gpt2-medium_scratch_neuro_tokenizer": {
-            "llm": "GPT2-355M",
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd": {
+            "llm": "GPT2-355M (fwd)",
             "color": '#6F5F90',
             "alpha": 0.8,
             "hatch": "",
         },
-        "gpt2-medium_scratch_neuro_tokenizer_backwards": {
-            "llm": "GPT2-355M (backward)",
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_rev": {
+            "llm": "GPT2-355M (rev)",
             "color": '#6F5F90',
             "alpha": 0.8,
             "hatch": "\\",
-        },
+        }
     },
     "gpt2-large": {
-        "gpt2-large_scratch_neuro_tokenizer": {
-            "llm": "GPT2-774M",
+        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd": {
+            "llm": "GPT2-774M (fwd)",
             "color": '#8A5082',
             "alpha": 0.8,
             "hatch": "",
         },
-        "gpt2-large_scratch_neuro_tokenizer_backwards": {
-            "llm": "GPT2-774M (backward)",
+        "gpt2-large_scratch_neuro_tokenizer_bayes_rev": {
+            "llm": "GPT2-774M (rev)",
             "color": '#8A5082',
             "alpha": 0.8,
             "hatch": "\\",
-        },
+        }
     }
 }
 
