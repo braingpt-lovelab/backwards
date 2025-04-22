@@ -129,8 +129,8 @@ def main(llm, dataset_type, sample_percentage):
         np.array(all_batches_ppl)
     )
 
-    with open(os.path.join(results_dir, f"all_batches_tokens_n_logprobs_n_ppls_{dataset_type}.json"), "w") as f:
-        json.dump(all_batches_tokens_n_ppls, f, indent=4)
+    # with open(os.path.join(results_dir, f"all_batches_tokens_n_logprobs_n_ppls_{dataset_type}.json"), "w") as f:
+    #     json.dump(all_batches_tokens_n_ppls, f, indent=4)
         
 
 if __name__ == "__main__":
@@ -150,10 +150,21 @@ if __name__ == "__main__":
     sample_percentage = args.sample_percentage
 
     llms = [
-        # "gpt2_scratch_neuro_tokenizer_bayes_fwd",
-        # "gpt2_scratch_neuro_tokenizer_bayes_rev",
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd",
+        "gpt2_scratch_neuro_tokenizer_bayes_rev",
         "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed2",
         "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed3",
+        "gpt2_scratch_neuro_tokenizer_bayes_perm",
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd",
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_rev",
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed2",
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed3",
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_perm",
+        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd",
+        "gpt2-large_scratch_neuro_tokenizer_bayes_rev",
+        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed2",
+        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed3",
+        "gpt2-large_scratch_neuro_tokenizer_bayes_perm",
     ]
 
     reference_dir = "/home/ken/projects/backwards/model_training"
@@ -168,6 +179,5 @@ if __name__ == "__main__":
 
         if not os.path.exists(results_dir):
             os.makedirs(results_dir)
-            results_dir = "model_results"
 
         main(llm, dataset_type, sample_percentage)
