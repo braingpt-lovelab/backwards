@@ -15,18 +15,18 @@ model_pairs = {
         "Fwd seed1 vs Rev seed1": ["gpt2_scratch_neuro_tokenizer_bayes_fwd", "gpt2_scratch_neuro_tokenizer_bayes_rev"],
         "Fwd seed1 vs Perm seed1": ["gpt2_scratch_neuro_tokenizer_bayes_fwd", "gpt2_scratch_neuro_tokenizer_bayes_perm"]
     },
-    # "GPT-2 (355M)": {
-    #     "Fwd seed1 vs Fwd seed2": ["gpt2-medium_scratch_neuro_tokenizer_bayes_fwd", "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed2"],
-    #     "Fwd seed1 vs Fwd seed3": ["gpt2-medium_scratch_neuro_tokenizer_bayes_fwd", "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed3"],
-    #     "Fwd seed1 vs Rev seed1": ["gpt2-medium_scratch_neuro_tokenizer_bayes_fwd", "gpt2-medium_scratch_neuro_tokenizer_bayes_rev"],
-    #     "Fwd seed1 vs Perm seed1": ["gpt2-medium_scratch_neuro_tokenizer_bayes_fwd", "gpt2-medium_scratch_neuro_tokenizer_bayes_perm"]
-    # },
-    # "GPT-2 (774M)": {
-    #     "Fwd seed1 vs Fwd seed2": ["gpt2-large_scratch_neuro_tokenizer_bayes_fwd", "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed2"],
-    #     "Fwd seed1 vs Fwd seed3": ["gpt2-large_scratch_neuro_tokenizer_bayes_fwd", "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed3"],
-    #     "Fwd seed1 vs Rev seed1": ["gpt2-large_scratch_neuro_tokenizer_bayes_fwd", "gpt2-large_scratch_neuro_tokenizer_bayes_rev"],
-    #     "Fwd seed1 vs Perm seed1": ["gpt2-large_scratch_neuro_tokenizer_bayes_fwd", "gpt2-large_scratch_neuro_tokenizer_bayes_perm"]
-    # }
+    "GPT-2 (355M)": {
+        "Fwd seed1 vs Fwd seed2": ["gpt2-medium_scratch_neuro_tokenizer_bayes_fwd", "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed2"],
+        "Fwd seed1 vs Fwd seed3": ["gpt2-medium_scratch_neuro_tokenizer_bayes_fwd", "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed3"],
+        "Fwd seed1 vs Rev seed1": ["gpt2-medium_scratch_neuro_tokenizer_bayes_fwd", "gpt2-medium_scratch_neuro_tokenizer_bayes_rev"],
+        "Fwd seed1 vs Perm seed1": ["gpt2-medium_scratch_neuro_tokenizer_bayes_fwd", "gpt2-medium_scratch_neuro_tokenizer_bayes_perm"]
+    },
+    "GPT-2 (774M)": {
+        "Fwd seed1 vs Fwd seed2": ["gpt2-large_scratch_neuro_tokenizer_bayes_fwd", "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed2"],
+        "Fwd seed1 vs Fwd seed3": ["gpt2-large_scratch_neuro_tokenizer_bayes_fwd", "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed3"],
+        "Fwd seed1 vs Rev seed1": ["gpt2-large_scratch_neuro_tokenizer_bayes_fwd", "gpt2-large_scratch_neuro_tokenizer_bayes_rev"],
+        "Fwd seed1 vs Perm seed1": ["gpt2-large_scratch_neuro_tokenizer_bayes_fwd", "gpt2-large_scratch_neuro_tokenizer_bayes_perm"]
+    }
 }
 
 plt.rcParams.update({'font.size': 16, 'font.weight': 'bold'})
@@ -50,7 +50,7 @@ def x_models_diffs(data_type="validation"):
         for col_idx, (model_pair_name, model_pair) in enumerate(model_pair.items()):
             model1_name, model2_name = model_pair
             print("-" * 20)
-            print(f"row: {row_idx}, col: {col_idx}, model_pair_name: {model_pair_name}")
+            print(f"{model_family}, {model_pair_name}")
 
             # Load results
             model1_ppls = np.load(
