@@ -79,11 +79,12 @@ def x_models_diffs(data_type="validation"):
                 alpha=0.5,
                 label=model2_legend,
             )
-            ax.set_title(model_pair_name)
             ax.set_xlabel("Perplexity")
             ax.set_ylabel("Density")
             ax.legend(loc='upper right')
             ax.grid(True, linestyle='--', alpha=0.5)
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
 
             # Add model family name
             if col_idx == 0:
@@ -103,34 +104,6 @@ def x_models_diffs(data_type="validation"):
             print(f"Pearson's r: {pearson_r}")
             print(f"Cohen's d: {cohen_d}")          # current, same as d'
             
-            # result = pg.ttest(model1_ppls, model2_ppls, paired=True)
-            # print(result)
-
-            # Produce model pair embedding layer similarity
-            model1_fpath = f"/home/ken/projects/backwards/model_training/exp/{model1_name}/checkpoint.4"
-            model2_fpath = f"/home/ken/projects/backwards/model_training/exp/{model2_name}/checkpoint.4"
-            model1 = transformers.GPT2LMHeadModel.from_pretrained(
-                model1_fpath,
-                load_in_8bit=False,
-                device_map='auto',
-                torch_dtype=torch.float16,
-            )
-            model1_emb_weights = model1.transformer.wte.weight.data.cpu().numpy()  # V * F
-            del model1
-            model2 = transformers.GPT2LMHeadModel.from_pretrained(
-                model2_fpath,
-                load_in_8bit=False,
-                device_map='auto',
-                torch_dtype=torch.float16,
-            )
-            model2_emb_weights = model2.transformer.wte.weight.data.cpu().numpy()  # V * F
-            del model2
-            cosine_sim_matrix = cosine_similarity(model1_emb_weights, model2_emb_weights)
-            cosine_sim_diag = np.diag(cosine_sim_matrix)
-            cosine_sim_diag_mean = np.mean(cosine_sim_diag)
-            cosine_sim_diag_std = np.std(cosine_sim_diag)
-            print(f"Embedding cosine similarity: {cosine_sim_diag_mean} +/- {cosine_sim_diag_std}")
-
     plt.tight_layout()
     plt.savefig("figs/model_pairs_ppl_diffs.png")
 
