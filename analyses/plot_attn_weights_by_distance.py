@@ -9,6 +9,8 @@ import pickle
 
 from utils import model_utils
 
+plt.rcParams.update({'font.size': 10, 'font.weight': 'bold'})
+
 def collate_fn(batch):
     input_ids = [sample["input_ids"] for sample in batch]
     attention_masks = [sample["attention_mask"] for sample in batch]
