@@ -62,21 +62,28 @@ def x_models_diffs(data_type="validation"):
 
             # Plot kde
             ax = axes[row_idx, col_idx]
+
+            # Split `model_pair_name` by vs to get legend
+            model1_legend, model2_legend = model_pair_name.split(" vs ")
             sns.kdeplot(
                 model1_ppls,
                 ax=ax,
                 color='blue',
                 alpha=0.5,
+                label=model1_legend,
             )
             sns.kdeplot(
                 model2_ppls,
                 ax=ax,
                 color='red',
                 alpha=0.5,
+                label=model2_legend,
             )
             ax.set_title(model_pair_name)
             ax.set_xlabel("Perplexity")
             ax.set_ylabel("Density")
+            ax.legend(loc='upper right')
+            ax.grid(True, linestyle='--', alpha=0.5)
 
             # Add model family name
             if col_idx == 0:
@@ -108,14 +115,16 @@ def x_models_diffs(data_type="validation"):
                 device_map='auto',
                 torch_dtype=torch.float16,
             )
+            model1_emb_weights = model1.transformer.wte.weight.data.cpu().numpy()  # V * F
+            del model1
             model2 = transformers.GPT2LMHeadModel.from_pretrained(
                 model2_fpath,
                 load_in_8bit=False,
                 device_map='auto',
                 torch_dtype=torch.float16,
             )
-            model1_emb_weights = model1.transformer.wte.weight.data.cpu().numpy()  # V * F
             model2_emb_weights = model2.transformer.wte.weight.data.cpu().numpy()  # V * F
+            del model2
             cosine_sim_matrix = cosine_similarity(model1_emb_weights, model2_emb_weights)
             cosine_sim_diag = np.diag(cosine_sim_matrix)
             cosine_sim_diag_mean = np.mean(cosine_sim_diag)
