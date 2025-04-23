@@ -47,7 +47,7 @@ def get_llm_accuracies(model_results_dir, use_human_abstract=True):
                 # Create a data point for this item
                 data_point = {
                     'model_id': i * len(llms[llm_family]) + j + 1,
-                    'direction': 0 if "backward" in llm else 1,
+                    'direction': 0 if "rev" in llm else 1,
                     'model_size': 2 if "medium" in llm else (3 if "large" in llm else 1),
                     'item': item_index,
                     'correct': int(np.argmin(PPL_A_and_B[item_index]) == labels[item_index])
@@ -171,7 +171,7 @@ def plot(use_human_abstract):
             capsize=3
         )
     
-    ax.legend(all_llm_names, loc='upper left')
+    ax.legend(all_llm_names, loc='upper left', ncol=2, fontsize=12)
 
     # human
     # plot as horizontal line
@@ -215,22 +215,7 @@ def plot(use_human_abstract):
         plt.savefig(f"{base_fname}_llm_abstract.pdf")
 
     # Significance testing 
-    # 1. Compare forwards vs backwards models acc
-    fwd_models = []
-    bwd_models = []
-    for family_index, llm_family in enumerate(llms.keys()):
-        llm_names = list(llms[llm_family].keys())
-        
-        llm_fwd_acc = llms[llm_family][llm_names[0]]["acc"]
-        llm_bwd_acc = llms[llm_family][llm_names[1]]["acc"]
-        fwd_models.append(llm_fwd_acc)
-        bwd_models.append(llm_bwd_acc)
-
-    print(fwd_models, bwd_models)
-    t_stat, p_val = stats.ttest_rel(fwd_models, bwd_models)
-    print(f"t({len(fwd_models)-1}) = {t_stat:.3f}, p = {p_val:.3f}")
-
-    # 2. Repeated AVONA for model size and training direction
+    # Repeated AVONA for model size and training direction
     # Done in `anova_stats.R`
 
 if __name__ == "__main__":
