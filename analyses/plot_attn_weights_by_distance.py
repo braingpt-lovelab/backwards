@@ -59,34 +59,9 @@ def load_data(batch_size=1):
     return dataloader_fwd, dataloader_rev, dataloader_perm
 
 
-def compute_attention_by_distance(attention_weights):
-    seq_len = attention_weights.shape[0]
-    distances = []
-    weights = []
-    
-    # Collect attention weights and their corresponding token distances
-    # Only include lower triangular entries (i >= j) to skip masked upper triangular
-    for i in range(seq_len):
-        for j in range(i + 1):  # j <= i ensures we only include lower triangle + diagonal
-            distance = abs(i - j)
-            weight = abs(attention_weights[i, j])  # magnitude only
-            distances.append(distance)
-            weights.append(weight)
-    
-    unique_distances = np.unique(distances)
-    mean_weights = []
-    for dist in unique_distances:
-        indices = [idx for idx, d in enumerate(distances) if d == dist]
-        dist_weights = [weights[idx] for idx in indices]
-        mean_weight = np.mean(dist_weights)
-        mean_weights.append(mean_weight)
-    
-    return unique_distances, mean_weights
-
-
-def compute_attention_norm_rank_by_distance(attention_weights):
+def compute_attention_metrics_by_distance(attention_weights):
     """
-    Compute normalized ranks of attention weights by distance.
+    Compute attention weights and normalized ranks by distance.
 
     Args:
         attention_weights (np.ndarray): Attention weights of shape (seq_len, seq_len);
@@ -94,50 +69,54 @@ def compute_attention_norm_rank_by_distance(attention_weights):
     
     Returns:
         unique_distances (np.ndarray): Unique distances from 0 to seq_len-1.
+        mean_weights (np.ndarray): Mean attention weights for each unique distance.
         mean_norm_ranks (np.ndarray): Mean normalized ranks for each unique distance.
 
     Steps:
-        1. Each row of attention matrix (lower triangular + diagonal) is processed to compute normalized ranks.
-        2. For each row, the ranks of the weights are computed and normalized to [0, 1].
-        3. Same as `compute_attention_by_distance`, but instead of weights, we use normalized ranks.
+        1. Process lower triangular entries (including diagonal) of attention matrix.
+        2. Compute mean attention weights by distance.
+        3. Compute normalized ranks for each row and average by distance.
     """
     seq_len = attention_weights.shape[0]
     distances = []
+    weights = []
     norm_ranks = []
     
-    # Process each row to compute normalized ranks for lower triangular entries
+    # Process each row to collect weights and compute normalized ranks
     for i in range(seq_len):
         # Extract lower triangular entries (j <= i, including diagonal)
         row_weights = attention_weights[i, :i+1]  # Shape: (i+1,)
         num_elements = len(row_weights)
         
-        # Compute ranks: argsort gives indices that would sort the array
-        # We want higher weights to have higher ranks
-        ranks = np.argsort(np.argsort(row_weights))  # Ranks from 0 (lowest) to num_elements-1 (highest)
-        
-        # Normalize ranks to [0, 1]
-        if num_elements > 1:
-            normalized_ranks = ranks / (num_elements - 1)  # Scale to [0, 1]
-        else:
-            normalized_ranks = np.array([0.0])  # Single element case (i=0, j=0)
-        
-        # Collect distances and normalized ranks
+        # Collect attention weights
         for j in range(i+1):  # j <= i
             distance = abs(i - j)
-            norm_rank = normalized_ranks[j]
+            weight = abs(attention_weights[i, j])  # Magnitude only
             distances.append(distance)
+            weights.append(weight)
+        
+        # Compute normalized ranks
+        ranks = np.argsort(np.argsort(row_weights))  # Ranks from 0 to num_elements-1
+        normalized_ranks = ranks / (num_elements - 1) if num_elements > 1 else np.array([0.0])
+        
+        # Collect normalized ranks
+        for j in range(i+1):  # j <= i
+            norm_rank = normalized_ranks[j]
             norm_ranks.append(norm_rank)
     
-    # Compute mean normalized rank for each unique distance
+    # Compute mean weights and mean normalized ranks for each unique distance
     unique_distances = np.unique(distances)
+    mean_weights = []
     mean_norm_ranks = []
+    
     for dist in unique_distances:
         indices = [idx for idx, d in enumerate(distances) if d == dist]
+        dist_weights = [weights[idx] for idx in indices]
         dist_norm_ranks = [norm_ranks[idx] for idx in indices]
-        mean_norm_rank = np.mean(dist_norm_ranks)
-        mean_norm_ranks.append(mean_norm_rank)
+        mean_weights.append(np.mean(dist_weights))
+        mean_norm_ranks.append(np.mean(dist_norm_ranks))
     
-    return unique_distances, mean_norm_ranks
+    return unique_distances, mean_weights, mean_norm_ranks
 
 
 def compute_attention_entropy(attention_weights):
@@ -375,10 +354,12 @@ def main():
                     axis=(0, 1)
                 )
 
-                # Get mean_weights by distance
-                # Each `mean_weights_by_distance` \in (num_unique_distances,)
+                # Get mean_weights_by_distance and mean_weights_norm_ranks by distance
+                # Each `mean_weights_by_distance` and `mean_weights_norm_ranks` \in (num_unique_distances,)
                 attn_weights_x_batches[model_key][layer_index]["unique_distances"], \
-                    attn_weights_x_batches[model_key][layer_index]["mean_weights_by_distance"] = compute_attention_by_distance(
+                attn_weights_x_batches[model_key][layer_index]["mean_weights_by_distance"], \
+                attn_weights_x_batches[model_key][layer_index]["mean_weights_norm_ranks"] \
+                    = compute_attention_metrics_by_distance(
                         attn_weights_x_batches[model_key][layer_index]["mean_weights"]
                 )
                 
@@ -392,29 +373,7 @@ def main():
             attn_weights_x_batches = pickle.load(f)        
         print(f"Loaded attn_weights_x_batches from disk: results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl")
 
-        # HACK: to incrementally get `mean_weights_norm_ranks`
-        # Check if `attn_weights_x_batches[model_key][layer_index]` has key `mean_weights_norm_ranks`
-        # if not, compute it
-        if "mean_weights_norm_ranks" not in attn_weights_x_batches["fwd"][0]:
-            print("Computing mean_weights_norm_ranks by distance...")
-            for model_key in attn_weights_x_batches:
-                for layer_index in attn_weights_x_batches[model_key]:
-                    print(f"model_key: {model_key}, layer_index: {layer_index}")
-
-                    # Get mean_weights_norm_ranks by distance
-                    # Each `mean_weights_by_distance` \in (num_unique_distances,)
-                    attn_weights_x_batches[model_key][layer_index]["unique_distances"], \
-                    attn_weights_x_batches[model_key][layer_index]["mean_weights_norm_ranks"] \
-                        = compute_attention_norm_rank_by_distance(
-                            attn_weights_x_batches[model_key][layer_index]["mean_weights"]
-                    )
-            
-            # Save `attn_weights_x_batches` to disk
-            with open(f"results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl", "wb") as f:
-                pickle.dump(attn_weights_x_batches, f)
-            print(f"Saved attn_weights_x_batches to disk: results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl")
-
-        elif "mean_weights_entropy" not in attn_weights_x_batches["fwd"][0]:
+        if "mean_weights_entropy" not in attn_weights_x_batches["fwd"][0]:
             print("Computing mean_weights_entropy")
             for model_key in attn_weights_x_batches:
                 for layer_index in attn_weights_x_batches[model_key]:
@@ -430,7 +389,7 @@ def main():
     # Visualize attention weights
     # visualize_attention_weights(attn_weights_x_batches)
     visualize_attention_weights_norm_ranks(attn_weights_x_batches)
-    visualize_attention_weights_entropy(attn_weights_x_batches)
+    # visualize_attention_weights_entropy(attn_weights_x_batches)
 
 
 if __name__ == "__main__":
