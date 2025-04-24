@@ -140,6 +140,49 @@ def compute_attention_norm_rank_by_distance(attention_weights):
     return unique_distances, mean_norm_ranks
 
 
+def compute_attention_entropy(attention_weights):
+    """
+    Compute average entropy of attention weights. 
+
+    Steps:
+        1. Each row of attention matrix (lower triangular + diagonal) is re-softmaxed to get probabilities (
+        necessary because we were averaging over heads and batches, so the input here is slightly off from being a 
+        valid probability distribution each row).
+        2. Compute entropy for each row.
+        3. Normalize row-entropy by the max row-entropy.
+        4. Compute a scalar average of the normalized row-entropies.
+    """
+    seq_len = attention_weights.shape[0]
+
+    # Re-softmax the attention weights to get probabilities
+    attention_weights[np.triu_indices(seq_len, k=1)] = -np.inf
+    attention_weights = np.exp(attention_weights - np.max(attention_weights, axis=1, keepdims=True))
+    attention_weights /= np.sum(attention_weights, axis=1, keepdims=True)
+
+    # Compute entropy for each row (lower triangular + diagonal)
+    row_entropies = []
+    for i in range(seq_len):
+        # Extract lower triangular entries (j <= i, including diagonal)
+        row_probs = attention_weights[i, :i+1]
+        num_elements = len(row_probs)
+        if num_elements > 1:
+            row_entropy = -np.sum(row_probs * np.log(row_probs))  # Add small value to avoid log(0)
+        else:
+            row_entropy = 0.0
+        # print(f"row {i}, len={num_elements}, row_entropy: {row_entropy}")
+        row_entropies.append(row_entropy)
+
+    # Normalize row-entropy by the max row-entropy
+    max_entropy = np.max(row_entropies)
+    normalized_row_entropies = row_entropies / max_entropy
+
+    # Compute average of normalized row-entropies
+    mean_entropy = np.mean(normalized_row_entropies)
+    std_entropy = np.std(normalized_row_entropies)
+    print(f"mean_entropy: {mean_entropy}, std_entropy: {std_entropy}")
+    return mean_entropy
+    
+
 def get_attention_weights_per_batch_mean_head(
         ids1, ids2, ids3,
         model1, model2, model3,
@@ -258,6 +301,38 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
     print(f"Saved attention weights norm ranks by distance plot to disk: figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png")
 
 
+def visualize_attention_weights_entropy(attn_weights_x_batches):
+    n_layers = len(attn_weights_x_batches["fwd"])
+    n_cols = 6
+    n_rows = int(np.ceil(n_layers / n_cols))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
+    axes = axes.flatten()
+
+    for layer_index in range(n_layers):
+        ax = axes[layer_index]
+
+        # Plot each model's mean entropy as barplot
+        bar_x = np.arange(len(model_types))
+        bar_heights = [
+            attn_weights_x_batches["fwd"][layer_index]["mean_weights_entropy"],
+            attn_weights_x_batches["rev"][layer_index]["mean_weights_entropy"],
+            attn_weights_x_batches["perm"][layer_index]["mean_weights_entropy"]
+        ]
+        bar_labels = ["Fwd", "Rev", "Perm"]
+        ax.bar(bar_x, bar_heights, color=["blue", "red", "cyan"], alpha=0.5)
+        ax.set_xticks(bar_x)
+        ax.set_xticklabels(bar_labels)
+        ax.set_xlabel("Model Type")
+        ax.set_ylabel("Mean Entropy")
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.set_title(f"Layer {layer_index + 1}")
+        # ax.set_yscale("log")
+    plt.tight_layout()
+    plt.savefig(f'figs/attn_weights_entropy_{model_size}_seed{random_seed}.png')
+    print(f"Saved attention weights entropy plot to disk: figs/attn_weights_entropy_{model_size}_seed{random_seed}.png")
+
+
 def main():
     if not os.path.exists(f"results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl"):
         print("Computing attention weights by distance...")
@@ -314,7 +389,7 @@ def main():
 
     else:
         with open(f"results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl", "rb") as f:
-            attn_weights_x_batches = pickle.load(f)
+            attn_weights_x_batches = pickle.load(f)        
         print(f"Loaded attn_weights_x_batches from disk: results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl")
 
         # HACK: to incrementally get `mean_weights_norm_ranks`
@@ -339,9 +414,23 @@ def main():
                 pickle.dump(attn_weights_x_batches, f)
             print(f"Saved attn_weights_x_batches to disk: results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl")
 
+        elif "mean_weights_entropy" not in attn_weights_x_batches["fwd"][0]:
+            print("Computing mean_weights_entropy")
+            for model_key in attn_weights_x_batches:
+                for layer_index in attn_weights_x_batches[model_key]:
+                    print(f"model_key: {model_key}, layer_index: {layer_index}")
+
+                    # Get mean_weights_entropy by distance
+                    # Each `mean_weights_by_distance` \in (num_unique_distances,)
+                    attn_weights_x_batches[model_key][layer_index]["mean_weights_entropy"] \
+                        = compute_attention_entropy(
+                            attn_weights_x_batches[model_key][layer_index]["mean_weights"]
+                    )
+
     # Visualize attention weights
     # visualize_attention_weights(attn_weights_x_batches)
     visualize_attention_weights_norm_ranks(attn_weights_x_batches)
+    visualize_attention_weights_entropy(attn_weights_x_batches)
 
 
 if __name__ == "__main__":
