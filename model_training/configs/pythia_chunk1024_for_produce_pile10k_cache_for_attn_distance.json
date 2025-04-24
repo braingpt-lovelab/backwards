@@ -1,0 +1,11 @@
+{
+    "model_path": "EleutherAI/pythia-70m",
+    "data_path": "NeelNanda/pile-10k",
+    "cache_dir": "cache",
+    "custom_tokenizer": "None",
+    "chunk_size": 1024,
+    "cache_dir_train": "cache/pythia_chunk1024_pile10k_fwd_train.arrow",
+    "reversed_training": false,
+    "permuted_training": false,
+    "random_seed": 1
+}
