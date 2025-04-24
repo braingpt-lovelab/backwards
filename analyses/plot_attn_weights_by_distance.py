@@ -395,9 +395,11 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot attention weights by distance")
     parser.add_argument("--model_size", type=str, default="small", help="Model size (small, medium, large)")
-    parser.add_argument("--random_seed", type=int, default=1, help="Random seed for reproducibility")
+    parser.add_argument("--model_seed", type=int, default=1, help="Random seed when training model")
+    parser.add_argument("--random_seed", type=int, default=1, help="Random seed for sampling")
     args = parser.parse_args()
     model_size = args.model_size
+    model_seed = args.model_seed
     random_seed = args.random_seed
 
     if model_size == "small":
@@ -412,6 +414,13 @@ if __name__ == "__main__":
         model1_name = "gpt2-large_scratch_neuro_tokenizer_bayes_fwd"
         model2_name = "gpt2-large_scratch_neuro_tokenizer_bayes_rev"
         model3_name = "gpt2-large_scratch_neuro_tokenizer_bayes_perm"
+    
+    # NOTE: for now we use the same fwd and rev models for convenience but
+    # varying perm model seeds. But ideally, we should have the same seed for
+    # fwd, rev, and perm models.
+    if int(model_seed) > 1:
+        model3_name += f"_seed{model_seed}"
+        model_size += f"_seed{model_seed}"
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     reference_dir = "/home/ken/projects/backwards/model_training"
