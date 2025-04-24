@@ -54,38 +54,23 @@ def compute_attention_metrics_by_distance(attention_weights):
         unique_distances (np.ndarray): Unique distances from 0 to seq_len-1.
         mean_weights (np.ndarray): Mean attention weights for each unique distance.
         mean_norm_ranks (np.ndarray): Mean normalized ranks for each unique distance.
-
-    Steps:
-        1. Process lower triangular entries (including diagonal) of attention matrix.
-        2. Compute mean attention weights by distance.
-        3. Compute normalized ranks for each row and average by distance.
     """
     seq_len = attention_weights.shape[0]
-    distances = []
-    weights = []
-    norm_ranks = []
     
-    # Process each row to collect weights and compute normalized ranks
-    for i in range(seq_len):
-        # Extract lower triangular entries (j <= i, including diagonal)
-        row_weights = attention_weights[i, :i+1]  # Shape: (i+1,)
+    # Get lower triangular indices (including diagonal)
+    i, j = np.tril_indices(seq_len)  # i >= j
+    distances = np.abs(i - j)  # Vectorized distance computation
+    weights = np.abs(attention_weights[i, j])  # Magnitude of attention weights
+    
+    # Compute normalized ranks for each row
+    norm_ranks = []
+    for row_idx in range(seq_len):
+        row_weights = attention_weights[row_idx, :row_idx+1]  # Lower triangular part of row
         num_elements = len(row_weights)
-        
-        # Collect attention weights
-        for j in range(i+1):  # j <= i
-            distance = abs(i - j)
-            weight = abs(attention_weights[i, j])  # Magnitude only
-            distances.append(distance)
-            weights.append(weight)
-        
-        # Compute normalized ranks
         ranks = np.argsort(np.argsort(row_weights))  # Ranks from 0 to num_elements-1
         normalized_ranks = ranks / (num_elements - 1) if num_elements > 1 else np.array([0.0])
-        
-        # Collect normalized ranks
-        for j in range(i+1):  # j <= i
-            norm_rank = normalized_ranks[j]
-            norm_ranks.append(norm_rank)
+        norm_ranks.extend(normalized_ranks)
+    norm_ranks = np.array(norm_ranks)
     
     # Compute mean weights and mean normalized ranks for each unique distance
     unique_distances = np.unique(distances)
@@ -93,13 +78,11 @@ def compute_attention_metrics_by_distance(attention_weights):
     mean_norm_ranks = []
     
     for dist in unique_distances:
-        indices = [idx for idx, d in enumerate(distances) if d == dist]
-        dist_weights = [weights[idx] for idx in indices]
-        dist_norm_ranks = [norm_ranks[idx] for idx in indices]
-        mean_weights.append(np.mean(dist_weights))
-        mean_norm_ranks.append(np.mean(dist_norm_ranks))
+        mask = distances == dist
+        mean_weights.append(np.mean(weights[mask]))
+        mean_norm_ranks.append(np.mean(norm_ranks[mask]))
     
-    return unique_distances, mean_weights, mean_norm_ranks
+    return unique_distances, np.array(mean_weights), np.array(mean_norm_ranks)
     
 
 def get_attention_weights_per_batch_mean_head(
@@ -268,6 +251,8 @@ def main():
 
 
 if __name__ == "__main__":
+    import time
+    start_time = time.time()
     parser = argparse.ArgumentParser(description="Plot attention weights by distance")
     parser.add_argument("--model_size", type=str, default="small", help="Model size (small, medium, large)")
     parser.add_argument("--random_seed", type=int, default=1, help="Random seed for reproducibility")
@@ -295,3 +280,7 @@ if __name__ == "__main__":
     max_num_batches = 16
 
     main()
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time / 60:.2f} minutes")
