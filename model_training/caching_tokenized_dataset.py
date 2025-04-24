@@ -49,7 +49,7 @@ def tokenize(element, tokenizer, args):
         output_ids = output_ids_permuted
         output_mask = output_mask_permuted
     else:
-        raise ValueError("Invalid training direction. Must be either reversed or permuted.")
+        print(f"Not reversing or permuting chunk...")
     bos_id = tokenizer.bos_token_id
     output_ids = [[bos_id] + chunk for chunk in output_ids]
     output_mask = [[1] + chunk for chunk in output_mask]
