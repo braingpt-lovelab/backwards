@@ -27,6 +27,7 @@ def collate_fn(batch):
         "labels": labels.to(device),
     }
 
+
 def load_data(batch_size=1):
     cache_dir_validation_fwd = os.path.join(reference_dir, "cache/neuroscience_bayes_fwd_validation.arrow")
     dataset_fwd = datasets.Dataset.load_from_disk(cache_dir_validation_fwd)
@@ -57,6 +58,7 @@ def load_data(batch_size=1):
     )
     return dataloader_fwd, dataloader_rev, dataloader_perm
 
+
 def compute_attention_by_distance(attention_weights):
     seq_len = attention_weights.shape[0]
     distances = []
@@ -80,6 +82,63 @@ def compute_attention_by_distance(attention_weights):
         mean_weights.append(mean_weight)
     
     return unique_distances, mean_weights
+
+
+def compute_attention_norm_rank_by_distance(attention_weights):
+    """
+    Compute normalized ranks of attention weights by distance.
+
+    Args:
+        attention_weights (np.ndarray): Attention weights of shape (seq_len, seq_len);
+        which has been averaged across heads and batches.
+    
+    Returns:
+        unique_distances (np.ndarray): Unique distances from 0 to seq_len-1.
+        mean_norm_ranks (np.ndarray): Mean normalized ranks for each unique distance.
+
+    Steps:
+        1. Each row of attention matrix (lower triangular + diagonal) is processed to compute normalized ranks.
+        2. For each row, the ranks of the weights are computed and normalized to [0, 1].
+        3. Same as `compute_attention_by_distance`, but instead of weights, we use normalized ranks.
+    """
+    seq_len = attention_weights.shape[0]
+    distances = []
+    norm_ranks = []
+    
+    # Process each row to compute normalized ranks for lower triangular entries
+    for i in range(seq_len):
+        # Extract lower triangular entries (j <= i, including diagonal)
+        row_weights = attention_weights[i, :i+1]  # Shape: (i+1,)
+        num_elements = len(row_weights)
+        
+        # Compute ranks: argsort gives indices that would sort the array
+        # We want higher weights to have higher ranks
+        ranks = np.argsort(np.argsort(row_weights))  # Ranks from 0 (lowest) to num_elements-1 (highest)
+        
+        # Normalize ranks to [0, 1]
+        if num_elements > 1:
+            normalized_ranks = ranks / (num_elements - 1)  # Scale to [0, 1]
+        else:
+            normalized_ranks = np.array([0.0])  # Single element case (i=0, j=0)
+        
+        # Collect distances and normalized ranks
+        for j in range(i+1):  # j <= i
+            distance = abs(i - j)
+            norm_rank = normalized_ranks[j]
+            distances.append(distance)
+            norm_ranks.append(norm_rank)
+    
+    # Compute mean normalized rank for each unique distance
+    unique_distances = np.unique(distances)
+    mean_norm_ranks = []
+    for dist in unique_distances:
+        indices = [idx for idx, d in enumerate(distances) if d == dist]
+        dist_norm_ranks = [norm_ranks[idx] for idx in indices]
+        mean_norm_rank = np.mean(dist_norm_ranks)
+        mean_norm_ranks.append(mean_norm_rank)
+    
+    return unique_distances, mean_norm_ranks
+
 
 def get_attention_weights_per_batch_mean_head(
         ids1, ids2, ids3,
@@ -116,6 +175,7 @@ def get_attention_weights_per_batch_mean_head(
         attn_weights_x_batches["perm"][layer_index]["mean_head_weights"].append(attention_weights3_mean_head)
 
     return attn_weights_x_batches
+
 
 def visualize_attention_weights(attn_weights_x_batches):
     n_layers = len(attn_weights_x_batches["fwd"])
@@ -156,6 +216,46 @@ def visualize_attention_weights(attn_weights_x_batches):
     plt.tight_layout()
     plt.savefig(f'figs/attn_weights_by_distance_{model_size}_seed{random_seed}.png')
     print(f"Saved attention weights by distance plot to disk: figs/attn_weights_by_distance_{model_size}_seed{random_seed}.png")
+
+
+def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
+    n_layers = len(attn_weights_x_batches["fwd"])
+    n_cols = 6
+    n_rows = int(np.ceil(n_layers / n_cols))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
+    axes = axes.flatten()
+
+    for layer_index in range(n_layers):
+        ax = axes[layer_index]
+
+        # Plot mean line
+        ax.plot(
+            attn_weights_x_batches["fwd"][layer_index]["unique_distances"],
+            attn_weights_x_batches["fwd"][layer_index]["mean_weights_norm_ranks"],
+            label="Fwd", color="blue", alpha=0.5
+        )
+        ax.plot(
+            attn_weights_x_batches["rev"][layer_index]["unique_distances"],
+            attn_weights_x_batches["rev"][layer_index]["mean_weights_norm_ranks"],
+            label="Rev", color="red", alpha=0.5
+        )
+        ax.plot(
+            attn_weights_x_batches["perm"][layer_index]["unique_distances"],
+            attn_weights_x_batches["perm"][layer_index]["mean_weights_norm_ranks"],
+            label="Perm", color="cyan", alpha=0.5
+        )
+
+        # Customize plot
+        ax.set_xlabel("Token Distance")
+        ax.set_ylabel("Attention Weight\n(Norm Rank)")
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.set_title(f"Layer {layer_index + 1}")
+    
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png')
+    print(f"Saved attention weights norm ranks by distance plot to disk: figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png")
 
 
 def main():
@@ -217,8 +317,31 @@ def main():
             attn_weights_x_batches = pickle.load(f)
         print(f"Loaded attn_weights_x_batches from disk: results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl")
 
+        # HACK: to incrementally get `mean_weights_norm_ranks`
+        # Check if `attn_weights_x_batches[model_key][layer_index]` has key `mean_weights_norm_ranks`
+        # if not, compute it
+        if "mean_weights_norm_ranks" not in attn_weights_x_batches["fwd"][0]:
+            print("Computing mean_weights_norm_ranks by distance...")
+            for model_key in attn_weights_x_batches:
+                for layer_index in attn_weights_x_batches[model_key]:
+                    print(f"model_key: {model_key}, layer_index: {layer_index}")
+
+                    # Get mean_weights_norm_ranks by distance
+                    # Each `mean_weights_by_distance` \in (num_unique_distances,)
+                    attn_weights_x_batches[model_key][layer_index]["unique_distances"], \
+                    attn_weights_x_batches[model_key][layer_index]["mean_weights_norm_ranks"] \
+                        = compute_attention_norm_rank_by_distance(
+                            attn_weights_x_batches[model_key][layer_index]["mean_weights"]
+                    )
+            
+            # Save `attn_weights_x_batches` to disk
+            with open(f"results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl", "wb") as f:
+                pickle.dump(attn_weights_x_batches, f)
+            print(f"Saved attn_weights_x_batches to disk: results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl")
+
     # Visualize attention weights
-    visualize_attention_weights(attn_weights_x_batches)
+    # visualize_attention_weights(attn_weights_x_batches)
+    visualize_attention_weights_norm_ranks(attn_weights_x_batches)
 
 
 if __name__ == "__main__":
