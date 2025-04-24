@@ -29,15 +29,8 @@ def collate_fn(batch):
 
 
 def load_data(batch_size=1, dataset="neuroscience_bayes_fwd_validation"):
-    if dataset == "neuroscience_bayes_fwd_validation":
-        cache_dir_validation_fwd = os.path.join(reference_dir, "cache/neuroscience_bayes_fwd_validation.arrow")
-        dataset_fwd = datasets.Dataset.load_from_disk(cache_dir_validation_fwd)
-    else:
-        # Load dataset from HF
-        dataset_fwd = datasets.load_dataset(
-            dataset,
-            cache_dir=os.path.joint(reference_dir, "cache"),
-        )
+    cache_dir_validation_fwd = os.path.join(reference_dir, f"{dataset}.arrow")
+    dataset_fwd = datasets.Dataset.load_from_disk(cache_dir_validation_fwd)
 
     # Make sure three dataloaders produce the data in the same order
     generator = torch.Generator()
@@ -163,8 +156,11 @@ def visualize_attention_weights(attn_weights_x_batches):
     
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f'figs/attn_weights_by_distance_{model_size}_seed{random_seed}.png')
-    print(f"Saved attention weights by distance plot to disk: figs/attn_weights_by_distance_{model_size}_seed{random_seed}.png")
+    fig_fpath = f'figs/attn_weights_by_distance_{model_size}_seed{random_seed}.png'
+    if "neuroscience" not in dataset:
+        fig_fpath = f'figs/attn_weights_by_distance_{model_size}_seed{random_seed}_{dataset}.png'
+    plt.savefig(fig_fpath)
+    print(f"Saved attention weights by distance plot to disk: {fig_fpath}")
 
 
 def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
@@ -193,15 +189,22 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
     
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png')
-    print(f"Saved attention weights norm ranks by distance plot to disk: figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png")
+    fig_fpath = f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png'
+    if "neuroscience" not in dataset:
+        fig_fpath = f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}_{dataset}.png'
+    plt.savefig(fig_fpath)
+    print(f"Saved attention weights norm ranks by distance plot to disk: {fig_fpath}")
 
 
 def main():
-    if not os.path.exists(f"results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl"):
+    result_fpath = f"results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl"
+    if "neuroscience" not in dataset:
+        result_fpath = f"results/attn_weights_x_batches_{model_size}_seed{random_seed}_{dataset}.pkl"
+
+    if not os.path.exists(result_fpath):
         print("Computing attention weights by distance...")
         attn_weights_x_batches = {}
-        dataloader_fwd = load_data(batch_size=batch_size)
+        dataloader_fwd = load_data(batch_size=batch_size, dataset=dataset)
         model1, tokenizer1 = model_utils.load_model_and_tokenizer(model1_name)
         if "pythia" in model1_name:
             n_layers = model1.config.num_hidden_layers
@@ -249,14 +252,14 @@ def main():
                 )
                 
         # Save `attn_weights_x_batches` to disk
-        with open(f"results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl", "wb") as f:
+        with open(result_fpath, "wb") as f:
             pickle.dump(attn_weights_x_batches, f)
-        print(f"Saved attn_weights_x_batches to disk: results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl")
+        print(f"Saved attn_weights_x_batches to disk: {result_fpath}")
 
     else:
-        with open(f"results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl", "rb") as f:
+        with open(result_fpath, "rb") as f:
             attn_weights_x_batches = pickle.load(f)        
-        print(f"Loaded attn_weights_x_batches from disk: results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl")
+        print(f"Loaded attn_weights_x_batches from disk: {result_fpath}")
 
     # Visualize attention weights
     # visualize_attention_weights(attn_weights_x_batches)
@@ -268,7 +271,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Plot attention weights by distance")
     parser.add_argument("--model_size", type=str, default="small", help="Model size (small, medium, large)")
     parser.add_argument("--random_seed", type=int, default=1, help="Random seed for reproducibility")
-    parser.add_argument("--dataset", type=str, default="neuroscience_bayes_fwd_validation", help="Dataset name")
+    parser.add_argument(
+        "--dataset", type=str, 
+        default="neuroscience_bayes_fwd_validation", 
+        help="Dataset name",  
+        # or `gpt2_chunk1024_pile10k_fwd_train`
+        # or `pythia_chunk1024_pile10k_fwd_train`
+        # or `pythia_chunk2048_pile10k_fwd_train`
+    )
     
     args = parser.parse_args()
     model_size = args.model_size
@@ -279,7 +289,7 @@ if __name__ == "__main__":
     print(f"model1_name: {model1_name}, model_size: {model_size}, random_seed: {random_seed}")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    reference_dir = "/home/ken/projects/backwards/model_training"
+    reference_dir = "/home/ken/projects/backwards/model_training/cache"
     model_types = ["fwd"]
     batch_size = 4
     max_num_batches = 16
