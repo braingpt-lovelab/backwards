@@ -139,9 +139,9 @@ def visualize_attention_weights(attn_weights_x_batches):
     
     plt.legend()
     plt.tight_layout()
-    fig_fpath = f'figs/attn_weights_by_distance_{model_size}_seed{random_seed}.png'
+    fig_fpath = f'figs/attn_weights_by_distance_{model_size}_seed{model_seed}_seed{random_seed}.png'
     if "neuroscience" not in dataset:
-        fig_fpath = f'figs/attn_weights_by_distance_{model_size}_seed{random_seed}_{dataset}.png'
+        fig_fpath = f'figs/attn_weights_by_distance_{model_size}_seed{model_seed}_seed{random_seed}_{dataset}.png'
     plt.savefig(fig_fpath)
     print(f"Saved attention weights by distance plot to disk: {fig_fpath}")
 
@@ -172,17 +172,17 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
     
     plt.legend()
     plt.tight_layout()
-    fig_fpath = f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png'
+    fig_fpath = f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{model_seed}_seed{random_seed}.png'
     if "neuroscience" not in dataset:
-        fig_fpath = f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}_{dataset}.png'
+        fig_fpath = f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{model_seed}_seed{random_seed}_{dataset}.png'
     plt.savefig(fig_fpath)
     print(f"Saved attention weights norm ranks by distance plot to disk: {fig_fpath}")
 
 
 def main():
-    result_fpath = f"results/attn_weights_x_batches_{model_size}_seed{random_seed}.pkl"
+    result_fpath = f"results/attn_weights_x_batches_{model_size}_seed{model_seed}_seed{random_seed}.pkl"
     if "neuroscience" not in dataset:
-        result_fpath = f"results/attn_weights_x_batches_{model_size}_seed{random_seed}_{dataset}.pkl"
+        result_fpath = f"results/attn_weights_x_batches_{model_size}_seed{model_seed}_seed{random_seed}_{dataset}.pkl"
 
     if not os.path.exists(result_fpath):
         print("Computing attention weights by distance...")
@@ -275,7 +275,10 @@ if __name__ == "__main__":
     dataset = args.dataset
     model1_name = model_size  # To be consistent with neuro gpt2 models.
     model_size = model_size.replace("/", "--")
-    print(f"model1_name: {model1_name}, model_size: {model_size}, random_seed: {random_seed}")
+    print(
+        f"model1_name: {model1_name}, model_size: {model_size}, "
+        f"model_seed: {model_seed}, random_seed: {random_seed}"
+    )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     reference_dir = "/home/ken/projects/backwards/model_training/cache"
