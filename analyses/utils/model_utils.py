@@ -1,7 +1,7 @@
 import transformers
 import torch
 
-model_list = {
+model_list_noseeds = {
     "gpt2": {
         "gpt2_scratch_neuro_tokenizer_bayes_fwd": {
             "llm": "GPT2-124M (fwd)",
@@ -46,6 +46,86 @@ model_list = {
     }
 }
 
+model_list = {
+    "gpt2": {
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd": {
+            "llm": "GPT2-124M (fwd seed1)",
+            "color": '#758EB7',
+            "alpha": 0.8,
+            "hatch": "",
+        },
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed2": {
+            "llm": "GPT2-124M (fwd seed2)",
+            "color": '#758EB7',
+            "alpha": 0.8,
+            "hatch": "..",
+        },
+        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed3": {
+            "llm": "GPT2-124M (fwd seed3)",
+            "color": '#758EB7',
+            "alpha": 0.8,
+            "hatch": "oo",
+        },
+        "gpt2_scratch_neuro_tokenizer_bayes_rev": {
+            "llm": "GPT2-124M (rev seed1)",
+            "color": '#758EB7',
+            "alpha": 0.8,
+            "hatch": "\\",
+        }
+    },
+    "gpt2-medium": {
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd": {
+            "llm": "GPT2-355M (fwd seed1)",
+            "color": '#6F5F90',
+            "alpha": 0.8,
+            "hatch": "",
+        },
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed2": {
+            "llm": "GPT2-355M (fwd seed2)",
+            "color": '#6F5F90',
+            "alpha": 0.8,
+            "hatch": "..",
+        },
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed3": {
+            "llm": "GPT2-355M (fwd seed3)",
+            "color": '#6F5F90',
+            "alpha": 0.8,
+            "hatch": "oo",
+        },
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_rev": {
+            "llm": "GPT2-355M (rev seed1)",
+            "color": '#6F5F90',
+            "alpha": 0.8,
+            "hatch": "\\",
+        }
+    },
+    "gpt2-large": {
+        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd": {
+            "llm": "GPT2-774M (fwd seed1)",
+            "color": '#8A5082',
+            "alpha": 0.8,
+            "hatch": "",
+        },
+        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed2": {
+            "llm": "GPT2-774M (fwd seed2)",
+            "color": '#8A5082',
+            "alpha": 0.8,
+            "hatch": "..",
+        },
+        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed3": {
+            "llm": "GPT2-774M (fwd seed3)",
+            "color": '#8A5082',
+            "alpha": 0.8,
+            "hatch": "oo",
+        },
+        "gpt2-large_scratch_neuro_tokenizer_bayes_rev": {
+            "llm": "GPT2-774M (rev seed1)",
+            "color": '#8A5082',
+            "alpha": 0.8,
+            "hatch": "\\",
+        }
+    }
+}
 
 def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
     if tokenizer_only:
