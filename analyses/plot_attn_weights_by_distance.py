@@ -22,9 +22,9 @@ def collate_fn(batch):
     labels = torch.tensor(labels)
 
     return {
-        "input_ids": input_ids.to(device),
-        "attention_mask": attention_masks.to(device), 
-        "labels": labels.to(device),
+        "input_ids": input_ids,
+        "attention_mask": attention_masks, 
+        "labels": labels,
     }
 
 
