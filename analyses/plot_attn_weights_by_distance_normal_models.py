@@ -188,6 +188,8 @@ def main():
         print("Computing attention weights by distance...")
         attn_weights_x_batches = {}
         dataloader_fwd = load_data(batch_size=batch_size, dataset=dataset)
+        if "init" in model1_name:
+            torch.manual_seed(model_seed)
         model1, tokenizer1 = model_utils.load_model_and_tokenizer(model1_name)
         if "pythia" in model1_name:
             n_layers = model1.config.num_hidden_layers
@@ -255,6 +257,7 @@ if __name__ == "__main__":
     start_time = time.time()
     parser = argparse.ArgumentParser(description="Plot attention weights by distance")
     parser.add_argument("--model_size", type=str, default="small", help="Model size (small, medium, large)")
+    parser.add_argument("--model_seed", type=int, default=1, help="Random seed when training model")
     parser.add_argument("--random_seed", type=int, default=1, help="Random seed for reproducibility")
     parser.add_argument(
         "--dataset", type=str, 
@@ -267,6 +270,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     model_size = args.model_size
+    model_seed = args.model_seed
     random_seed = args.random_seed
     dataset = args.dataset
     model1_name = model_size  # To be consistent with neuro gpt2 models.
