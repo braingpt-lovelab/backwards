@@ -181,10 +181,10 @@ def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
     elif "init" in model_fpath:
         model_name = model_fpath.split("_")[0]
         print(f"Loading {model_name} model untrained")
-        from transformers import AutoConfig, AutoModelForCausalLM
+        from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
         model_config = AutoConfig.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_config(model_config).to('cuda')
-        tokenizer = transformers.GPT2Tokenizer.from_pretrained(model_name)
+        tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
 
     # Load bayes fwd/rev models
     elif "bayes" in model_fpath:
