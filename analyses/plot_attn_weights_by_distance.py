@@ -59,54 +59,62 @@ def load_data(batch_size=1):
     return dataloader_fwd, dataloader_rev, dataloader_perm
 
 
-def compute_attention_metrics_by_distance(attention_weights):
+def compute_attention_norm_ranks_by_distance(attention_weights):
     """
-    Compute attention weights and normalized ranks by distance.
+    Compute attention weights normalized ranks by distance.
 
     Args:
-        attention_weights (torch.Tensor): Attention weights of shape (seq_len, seq_len);
-                                         averaged across heads and batches, on device.
-    
+        attention_weights (torch.Tensor): Attention weights of shape (bsz, n_heads, seq_len, seq_len);
+                                         Assumed to be valid probabilities, on device.
+
     Returns:
         unique_distances (torch.Tensor): Unique distances from 0 to seq_len-1.
-        mean_weights (torch.Tensor): Mean attention weights for each unique distance.
         mean_norm_ranks (torch.Tensor): Mean normalized ranks for each unique distance.
     """
     device = attention_weights.device
-    seq_len = attention_weights.shape[0]
-    
+    dtype = attention_weights.dtype
+    bsz, n_heads, seq_len, _ = attention_weights.shape
+
     # Get lower triangular indices (including diagonal)
     i, j = torch.tril_indices(seq_len, seq_len, device=device)  # i >= j
     distances = torch.abs(i - j)  # Vectorized distance computation
-    weights = torch.abs(attention_weights[i, j])  # Magnitude of attention weights
-    
+    # Shape: (bsz, n_heads, num_tril_elements)
+    weights = attention_weights[:, :, i, j]
+
+    # Initialize normalized ranks
+    # Shape: (bsz, n_heads, num_tril_elements)
+    norm_ranks = torch.zeros_like(weights, device=device, dtype=dtype)
+
     # Compute normalized ranks for each row
-    norm_ranks = []
     for row_idx in range(seq_len):
-        row_weights = attention_weights[row_idx, :row_idx+1]  # Lower triangular part of row
-        num_elements = row_weights.shape[0]
+        # Extract weights for the lower triangular part of the current row
+        # Shape: (bsz, n_heads, num_elements)
+        row_weights = attention_weights[:, :, row_idx, :row_idx+1]
+        num_elements = row_weights.shape[-1]
+        
         if num_elements > 1:
-            ranks = torch.argsort(torch.argsort(row_weights))  # Ranks from 0 to num_elements-1
-            normalized_ranks = ranks / (num_elements - 1)  # Normalize to [0, 1]
+            # Compute ranks: argsort(argsort) gives ranks from 0 to num_elements-1
+            # Higher valued rank means higher attention weight
+            ranks = torch.argsort(torch.argsort(row_weights, dim=-1), dim=-1)
+            # Normalize ranks and cast to input dtype
+            # Higher attention weight gets normalized rank closer to 1
+            normalized_ranks = (ranks / (num_elements - 1)).to(dtype=dtype)
         else:
-            normalized_ranks = torch.tensor([0.0], device=device)
-        norm_ranks.append(normalized_ranks)
-    norm_ranks = torch.cat(norm_ranks, dim=0)
-    
-    # Compute mean weights and mean normalized ranks for each unique distance
+            normalized_ranks = torch.zeros(bsz, n_heads, 1, device=device, dtype=dtype)
+        
+        # Assign to correct positions using tril_indices
+        mask = i == row_idx
+        norm_ranks[:, :, mask] = normalized_ranks
+
+    # Compute mean normalized ranks for each unique distance
     unique_distances = torch.unique(distances)
-    mean_weights = []
-    mean_norm_ranks = []
-    
+    mean_norm_ranks = torch.zeros(len(unique_distances), device=device, dtype=dtype)
+
     for dist in unique_distances:
         mask = distances == dist
-        mean_weights.append(torch.mean(weights[mask]))
-        mean_norm_ranks.append(torch.mean(norm_ranks[mask]))
-    
-    mean_weights = torch.stack(mean_weights)
-    mean_norm_ranks = torch.stack(mean_norm_ranks)
-    
-    return unique_distances, mean_weights, mean_norm_ranks
+        mean_norm_ranks[dist] = norm_ranks[:, :, mask].mean()
+
+    return unique_distances, mean_norm_ranks
 
 
 def compute_attention_entropy(attention_weights):
@@ -168,14 +176,14 @@ def get_attention_weights_n_entropy_per_batch_mean_head(
         device
     ):
     """
-    Compute attention weights and entropy for each layer, storing in preallocated GPU tensors.
+    Compute attention weights norm ranks and entropy for each layer, storing in preallocated GPU tensors.
 
     Args:
         ids1, ids2, ids3 (dict): Input IDs and attention masks for each model.
-        model1, model2, model3: PyTorch models for forward, reverse, and permuted inputs.
-        attn_weights_x_batches (dict): Dictionary with preallocated tensors for results.
-        batch_index (int): Current batch index for storing results.
-        device (torch.device): Device to perform computations on (GPU or CPU).
+        model1, model2, model3 (torch.nn.Module): Models for each type.
+        attn_weights_x_batches (dict): Preallocated tensors for storing attention weights and entropy.
+        batch_index (int): Index of the current batch.
+        device (torch.device): Device to run the models on.
 
     Returns:
         attn_weights_x_batches (dict): Updated dictionary with attention weights and entropy.
@@ -204,15 +212,18 @@ def get_attention_weights_n_entropy_per_batch_mean_head(
         attention_weights2 = outputs2.attentions[layer_index]
         attention_weights3 = outputs3.attentions[layer_index]
 
-        # Compute mean attention weights across head dimensions
-        attention_weights1_mean_head = torch.mean(attention_weights1, dim=1)  # (bsz, seq_len, seq_len)
-        attention_weights2_mean_head = torch.mean(attention_weights2, dim=1)
-        attention_weights3_mean_head = torch.mean(attention_weights3, dim=1)
+        # Compute per head norm ranks and average over heads and per batch
+        unique_distances, attention_weights_norm_ranks_mean_head1 = compute_attention_norm_ranks_by_distance(attention_weights1)
+        _, attention_weights_norm_ranks_mean_head2 = compute_attention_norm_ranks_by_distance(attention_weights2)
+        _, attention_weights_norm_ranks_mean_head3 = compute_attention_norm_ranks_by_distance(attention_weights3)
 
         # Store in preallocated tensors
-        attn_weights_x_batches["fwd"][layer_index]["mean_head_weights"][batch_index] = attention_weights1_mean_head
-        attn_weights_x_batches["rev"][layer_index]["mean_head_weights"][batch_index] = attention_weights2_mean_head
-        attn_weights_x_batches["perm"][layer_index]["mean_head_weights"][batch_index] = attention_weights3_mean_head
+        attn_weights_x_batches["fwd"][layer_index]["mean_head_weights_norm_ranks"][batch_index] = attention_weights_norm_ranks_mean_head1
+        attn_weights_x_batches["rev"][layer_index]["mean_head_weights_norm_ranks"][batch_index] = attention_weights_norm_ranks_mean_head2
+        attn_weights_x_batches["perm"][layer_index]["mean_head_weights_norm_ranks"][batch_index] = attention_weights_norm_ranks_mean_head3
+        attn_weights_x_batches["fwd"][layer_index]["unique_distances"] = unique_distances
+        attn_weights_x_batches["rev"][layer_index]["unique_distances"] = unique_distances
+        attn_weights_x_batches["perm"][layer_index]["unique_distances"] = unique_distances
 
         # Compute per head entropy and average over heads and per batch
         attention_weights_entropy_mean_head1 = compute_attention_entropy(attention_weights1)
@@ -310,15 +321,21 @@ def main():
         model3, tokenizer3 = model_utils.load_model_and_tokenizer(model3_name)
         n_layers = len(model1.transformer.h)
         seq_len = model1.config.n_positions
+        # diff by 0, 1, ..., seq_len-1
+        num_unique_distances = seq_len
 
         # Preallocate tensors for each model type and layer
         for model_type in model_types:
             attn_weights_x_batches[model_type] = {}
             for layer_index in range(n_layers):
                 attn_weights_x_batches[model_type][layer_index] = {
-                    # Preallocate: (max_num_batches, bsz, seq_len, seq_len)
-                    "mean_head_weights": torch.zeros(
-                        max_num_batches, batch_size, seq_len, seq_len, device=device
+                    # Preallocate: (max_num_batches, num_unique_distances)
+                    "mean_head_weights_norm_ranks": torch.zeros(
+                        max_num_batches, seq_len, device=device
+                    ),
+                    # Preallocate: (num_unique_distances,)
+                    "unique_distances": torch.zeros(
+                        num_unique_distances, device=device
                     ),
                     # Preallocate: (max_num_batches, 1)
                     "mean_head_entropy": torch.zeros(max_num_batches, 1, device=device),
@@ -337,32 +354,19 @@ def main():
                 device,
             )
 
-        # Average the attention weights and entropy across batches
-        # - Each `mean_head_weights` \in (num_batches, bsz, seq_len, seq_len)
-        #   Need to average `num_batches * bsz` to get (seq_len, seq_len)
+        # Average the attention weights norm ranks and entropy across batches
+        # - Each `mean_head_weights_norm_ranks` \in (num_batches, num_unique_distances)
+        #   Need to average `num_batches * bsz` to get (num_unique_distances,)
         # - Each `mean_head_entropy` \in (num_batches, 1)
         #   Need to average `num_batches` to get (1,)
         for model_key in attn_weights_x_batches:
             for layer_index in attn_weights_x_batches[model_key]:
                 print(f"model_key: {model_key}, layer_index: {layer_index}")
-                # Each `mean_head_weights` \in (num_batches, bsz, seq_len, seq_len)
-                # Each `mean_weights` \in (seq_len, seq_len)
-                attn_weights_x_batches[model_key][layer_index]["mean_weights"] = torch.mean(
-                    attn_weights_x_batches[model_key][layer_index]["mean_head_weights"], 
-                    dim=(0, 1),
+                attn_weights_x_batches[model_key][layer_index]["mean_weights_norm_ranks"] = torch.mean(
+                    attn_weights_x_batches[model_key][layer_index]["mean_head_weights_norm_ranks"],
+                    dim=0,
                 )
 
-                # Get mean_weights_by_distance and mean_weights_norm_ranks by distance
-                # Each `mean_weights_by_distance` and `mean_weights_norm_ranks` \in (num_unique_distances,)
-                attn_weights_x_batches[model_key][layer_index]["unique_distances"], \
-                attn_weights_x_batches[model_key][layer_index]["mean_weights_by_distance"], \
-                attn_weights_x_batches[model_key][layer_index]["mean_weights_norm_ranks"] \
-                    = compute_attention_metrics_by_distance(
-                        attn_weights_x_batches[model_key][layer_index]["mean_weights"]
-                )
-
-                # Each `mean_head_entropy` \in (num_batches, 1)
-                # Each `mean_weights_entropy` \in (1,)
                 attn_weights_x_batches[model_key][layer_index]["mean_weights_entropy"] = torch.mean(
                     attn_weights_x_batches[model_key][layer_index]["mean_head_entropy"], 
                     dim=0,
