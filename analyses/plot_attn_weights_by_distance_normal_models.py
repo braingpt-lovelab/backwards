@@ -79,7 +79,7 @@ def get_attention_weights_n_entropy_per_batch_mean_head(
             = compute_attention_entropy(attention_weights1)
 
         # Store in preallocated tensors
-        attn_weights_x_batches["fwd"][layer_index]["mean_head_per_row_entropy"] = attention_weights_entropy_mean_head1_per_row
+        attn_weights_x_batches["fwd"][layer_index]["mean_head_per_row_entropy"][batch_index] = attention_weights_entropy_mean_head1_per_row
         attn_weights_x_batches["fwd"][layer_index]["mean_head_entropy"][batch_index] = attention_weights_entropy_mean_head1
     return attn_weights_x_batches
 
@@ -104,6 +104,8 @@ def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
         ax.set_xlabel("Context Size")
         ax.set_ylabel("Mean Entropy")
         ax.set_ylim(0, 1)
+        ax.set_yticks([0, 0.5, 1])
+        ax.set_yticklabels([0, 0.5, 1])
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.set_title(f"Layer {layer_index + 1}")
@@ -140,12 +142,15 @@ def visualize_attention_weights_col_norm_ranks(attn_weights_x_batches):
         ax.plot(
             attn_weights_x_batches["fwd"][layer_index]["unique_distances"],
             attn_weights_x_batches["fwd"][layer_index]["mean_weights_col_norm_ranks"],
-            label="Fwd", color="blue", alpha=0.5
+            label="Fwd", color="blue", alpha=0.5,
         )
 
         # Customize plot
         ax.set_xlabel("Token Position")
         ax.set_ylabel("Attention Weight\n(Norm Rank)")
+        ax.set_ylim(0, 1)
+        ax.set_yticks([0, 0.5, 1])
+        ax.set_yticklabels([0, 0.5, 1])
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.set_title(f"Layer {layer_index + 1}")
@@ -188,6 +193,9 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
         # Customize plot
         ax.set_xlabel("Token Distance")
         ax.set_ylabel("Attention Weight\n(Norm Rank)")
+        ax.set_ylim(0, 1)
+        ax.set_yticks([0, 0.5, 1])
+        ax.set_yticklabels([0, 0.5, 1])
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.set_title(f"Layer {layer_index + 1}")
@@ -232,6 +240,8 @@ def visualize_attention_weights_entropy(attn_weights_x_batches):
         ax.set_xticklabels(bar_labels)
         ax.set_ylabel("Mean Entropy")
         ax.set_ylim(0, 1)
+        ax.set_yticks([0, 0.5, 1])
+        ax.set_yticklabels([0, 0.5, 1])
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.set_title(f"Layer {layer_index + 1}")
