@@ -144,7 +144,7 @@ def visualize_attention_weights_col_norm_ranks(attn_weights_x_batches):
         )
 
         # Customize plot
-        ax.set_xlabel("Token Distance")
+        ax.set_xlabel("Token Position")
         ax.set_ylabel("Attention Weight\n(Norm Rank)")
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
@@ -265,14 +265,13 @@ def main():
         if "init" in model1_name:
             torch.manual_seed(model_seed)
         model1, tokenizer1 = model_utils.load_model_and_tokenizer(model1_name)
-        if "pythia" in model1_name:
-            n_layers = model1.config.num_hidden_layers
+        if "gpt2" in model1_name:
+            seq_len = model1.config.n_positions
+        else: 
             # HACK:
             # Get actual seq length from `pythia_chunk{seq_len}_pile10k_fwd_train`
             seq_len = int(dataset.split("_")[1].replace("chunk", ""))
-        else: 
-            n_layers = len(model1.transformer.h)
-            seq_len = model1.config.n_positions
+        n_layers = model1.config.num_hidden_layers
         num_unique_distances = seq_len
         print(f"n_layers: {n_layers}, seq_len: {seq_len}")
 
@@ -389,6 +388,8 @@ if __name__ == "__main__":
         # or `gpt2_chunk1024_pile10k_fwd_train`
         # or `pythia_chunk1024_pile10k_fwd_train`
         # or `pythia_chunk2048_pile10k_fwd_train`
+        # or `llama2_chunk1024_pile10k_fwd_train`
+        # or `llama2_chunk16_pile10k_fwd_train`
     )
     
     args = parser.parse_args()
