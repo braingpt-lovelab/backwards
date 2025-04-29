@@ -61,7 +61,7 @@ def load_data(batch_size=1):
 
 def compute_attention_norm_ranks_by_distance(attention_weights):
     """
-    Compute attention weights normalized ranks by distance.
+    Compute attention weights normalized ranks by distance and mean normalized ranks by column.
 
     Args:
         attention_weights (torch.Tensor): Attention weights of shape (bsz, n_heads, seq_len, seq_len);
@@ -70,6 +70,7 @@ def compute_attention_norm_ranks_by_distance(attention_weights):
     Returns:
         unique_distances (torch.Tensor): Unique distances from 0 to seq_len-1.
         mean_norm_ranks (torch.Tensor): Mean normalized ranks for each unique distance.
+        col_mean_norm_ranks (torch.Tensor): Mean normalized ranks for each column, shape (seq_len,).
     """
     device = attention_weights.device
     dtype = attention_weights.dtype
@@ -109,12 +110,17 @@ def compute_attention_norm_ranks_by_distance(attention_weights):
     # Compute mean normalized ranks for each unique distance
     unique_distances = torch.unique(distances)
     mean_norm_ranks = torch.zeros(len(unique_distances), device=device, dtype=dtype)
-
     for dist in unique_distances:
         mask = distances == dist
         mean_norm_ranks[dist] = norm_ranks[:, :, mask].mean()
 
-    return unique_distances, mean_norm_ranks
+    # Compute mean normalized ranks for each column
+    col_mean_norm_ranks = torch.zeros(seq_len, device=device, dtype=dtype)
+    for col_idx in range(seq_len):
+        mask = j == col_idx
+        col_mean_norm_ranks[col_idx] = norm_ranks[:, :, mask].mean()
+
+    return unique_distances, mean_norm_ranks, col_mean_norm_ranks
 
 
 def compute_attention_entropy(attention_weights):
@@ -212,15 +218,21 @@ def get_attention_weights_n_entropy_per_batch_mean_head(
         attention_weights2 = outputs2.attentions[layer_index]
         attention_weights3 = outputs3.attentions[layer_index]
 
-        # Compute per head norm ranks and average over heads and per batch
-        unique_distances, attention_weights_norm_ranks_mean_head1 = compute_attention_norm_ranks_by_distance(attention_weights1)
-        _, attention_weights_norm_ranks_mean_head2 = compute_attention_norm_ranks_by_distance(attention_weights2)
-        _, attention_weights_norm_ranks_mean_head3 = compute_attention_norm_ranks_by_distance(attention_weights3)
+        # Compute per head norm ranks, col norm ranks and average over heads and per batch
+        unique_distances, attention_weights_norm_ranks_mean_head1, attention_weights_col_norm_ranks_mean_head1 \
+            = compute_attention_norm_ranks_by_distance(attention_weights1)
+        _, attention_weights_norm_ranks_mean_head2, attention_weights_col_norm_ranks_mean_head2 \
+            = compute_attention_norm_ranks_by_distance(attention_weights2)
+        unique_distances, attention_weights_norm_ranks_mean_head3, attention_weights_col_norm_ranks_mean_head3 \
+            = compute_attention_norm_ranks_by_distance(attention_weights3)
 
         # Store in preallocated tensors
         attn_weights_x_batches["fwd"][layer_index]["mean_head_weights_norm_ranks"][batch_index] = attention_weights_norm_ranks_mean_head1
         attn_weights_x_batches["rev"][layer_index]["mean_head_weights_norm_ranks"][batch_index] = attention_weights_norm_ranks_mean_head2
         attn_weights_x_batches["perm"][layer_index]["mean_head_weights_norm_ranks"][batch_index] = attention_weights_norm_ranks_mean_head3
+        attn_weights_x_batches["fwd"][layer_index]["mean_head_weights_col_norm_ranks"][batch_index] = attention_weights_col_norm_ranks_mean_head1
+        attn_weights_x_batches["rev"][layer_index]["mean_head_weights_col_norm_ranks"][batch_index] = attention_weights_col_norm_ranks_mean_head2
+        attn_weights_x_batches["perm"][layer_index]["mean_head_weights_col_norm_ranks"][batch_index] = attention_weights_col_norm_ranks_mean_head3
         attn_weights_x_batches["fwd"][layer_index]["unique_distances"] = unique_distances
         attn_weights_x_batches["rev"][layer_index]["unique_distances"] = unique_distances
         attn_weights_x_batches["perm"][layer_index]["unique_distances"] = unique_distances
@@ -295,6 +307,53 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
     print(f"Saved attention weights norm ranks by distance plot to disk: figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png")
 
 
+def visualize_attention_weights_col_norm_ranks(attn_weights_x_batches):
+    n_layers = len(attn_weights_x_batches["fwd"])
+    n_cols = 6
+    n_rows = int(np.ceil(n_layers / n_cols))
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
+    axes = axes.flatten()
+
+    for layer_index in range(n_layers):
+        ax = axes[layer_index]
+
+        # Plot mean line
+        ax.plot(
+            attn_weights_x_batches["fwd"][layer_index]["mean_weights_col_norm_ranks"],
+            label="Fwd", color="blue", alpha=0.5
+        )
+        ax.plot(
+            attn_weights_x_batches["rev"][layer_index]["mean_weights_col_norm_ranks"],
+            label="Rev", color="red", alpha=0.5
+        )
+        ax.plot(
+            attn_weights_x_batches["perm"][layer_index]["mean_weights_col_norm_ranks"],
+            label="Perm", color="cyan", alpha=0.5
+        )
+
+        # Customize plot
+        ax.set_xlabel("Token Position")
+        ax.set_ylabel("Attention Weight\n(Norm Rank)")
+        ax.set_ylim(0, 1)
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.set_title(f"Layer {layer_index + 1}")
+
+        # Only keep x and ylabels on the last row and first column
+        if layer_index % n_cols != 0:
+            ax.set_ylabel("")
+        if layer_index < n_layers - n_cols:
+            ax.set_xlabel("")
+
+        # Add grid
+        ax.grid(True, linestyle='--', alpha=0.5)
+
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(f'figs/attn_weights_col_norm_ranks_{model_size}_seed{random_seed}.png')
+    print(f"Saved attention weights col norm ranks plot to disk: figs/attn_weights_col_norm_ranks_{model_size}_seed{random_seed}.png")
+
+
 def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
     n_layers = len(attn_weights_x_batches["fwd"])
     n_cols = 6
@@ -307,15 +366,15 @@ def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
 
         # Plot each model's mean entropy per row as curve
         ax.plot(
-            attn_weights_x_batches["fwd"][layer_index]["mean_head_per_row_entropy"],
+            attn_weights_x_batches["fwd"][layer_index]["mean_weights_per_row_entropy"],
             label="Fwd", color="blue", alpha=0.5
         )
         ax.plot(
-            attn_weights_x_batches["rev"][layer_index]["mean_head_per_row_entropy"],
+            attn_weights_x_batches["rev"][layer_index]["mean_weights_per_row_entropy"],
             label="Rev", color="red", alpha=0.5
         )
         ax.plot(
-            attn_weights_x_batches["perm"][layer_index]["mean_head_per_row_entropy"],
+            attn_weights_x_batches["perm"][layer_index]["mean_weights_per_row_entropy"],
             label="Perm", color="cyan", alpha=0.5
         )
 
@@ -406,6 +465,10 @@ def main():
                     "mean_head_weights_norm_ranks": torch.zeros(
                         max_num_batches, seq_len, device=device
                     ),
+                    # Preallocate: (max_num_batches, seq_len)
+                    "mean_head_weights_col_norm_ranks": torch.zeros(
+                        max_num_batches, seq_len, device=device
+                    ),
                     # Preallocate: (num_unique_distances,)
                     "unique_distances": torch.zeros(
                         num_unique_distances, device=device
@@ -434,6 +497,8 @@ def main():
         # Average the attention weights norm ranks and entropy across batches
         # - Each `mean_head_weights_norm_ranks` \in (num_batches, num_unique_distances)
         #   Need to average `num_batches` to get (num_unique_distances,)
+        # - Each `mean_head_weights_col_norm_ranks` \in (num_batches, seq_len)
+        #   Need to average `num_batches` to get (seq_len,)
         # - Each `mean_head_per_row_entropy` \in (num_batches, seq_len)
         #   Need to average `num_batches` to get (seq_len,)
         # - Each `mean_head_entropy` \in (num_batches, 1)
@@ -446,7 +511,12 @@ def main():
                     dim=0,
                 )
 
-                attn_weights_x_batches[model_key][layer_index]['mean_head_per_row_entropy'] = torch.mean(
+                attn_weights_x_batches[model_key][layer_index]["mean_weights_col_norm_ranks"] = torch.mean(
+                    attn_weights_x_batches[model_key][layer_index]["mean_head_weights_col_norm_ranks"],
+                    dim=0,
+                )
+
+                attn_weights_x_batches[model_key][layer_index]['mean_weights_per_row_entropy'] = torch.mean(
                     attn_weights_x_batches[model_key][layer_index]["mean_head_per_row_entropy"],
                     dim=0,
                 )
@@ -476,6 +546,7 @@ def main():
 
     # Visualize attention weights
     visualize_attention_weights_norm_ranks(attn_weights_x_batches)
+    visualize_attention_weights_col_norm_ranks(attn_weights_x_batches)
     visualize_attention_weights_entropy_per_row(attn_weights_x_batches)
     visualize_attention_weights_entropy(attn_weights_x_batches)
 
@@ -521,6 +592,8 @@ if __name__ == "__main__":
     model_types = ["fwd", "rev", "perm"]
     batch_size = 4
     max_num_batches = 16
+    if not os.path.exists("results"):
+        os.makedirs("results")
 
     main()
 
