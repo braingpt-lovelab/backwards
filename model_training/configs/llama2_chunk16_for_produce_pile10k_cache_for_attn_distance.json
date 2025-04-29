@@ -1,0 +1,11 @@
+{
+    "model_path": "meta-llama/Llama-2-7b-hf",
+    "data_path": "NeelNanda/pile-10k",
+    "cache_dir": "cache",
+    "custom_tokenizer": "None",
+    "chunk_size": 16,
+    "cache_dir_train": "cache/llama2_chunk16_pile10k_fwd_train.arrow",
+    "reversed_training": false,
+    "permuted_training": false,
+    "random_seed": 1
+}

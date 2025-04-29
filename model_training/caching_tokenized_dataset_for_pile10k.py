@@ -144,7 +144,9 @@ if __name__ == "__main__":
     # config_fpath = "configs/gpt2_scratch_neuro_tokenizer_bayes_perm.json"  ### _fwd | _rev | _perm
     # config_fpath = "configs/gpt2_chunk1024_for_produce_pile10k_cache_for_attn_distance.json"
     # config_fpath = "configs/pythia_chunk1024_for_produce_pile10k_cache_for_attn_distance.json"
-    config_fpath = "configs/pythia_chunk2048_for_produce_pile10k_cache_for_attn_distance.json"
+    # config_fpath = "configs/pythia_chunk2048_for_produce_pile10k_cache_for_attn_distance.json"
+    # config_fpath = "configs/llama2_chunk1024_for_produce_pile10k_cache_for_attn_distance.json"
+    config_fpath = "configs/llama2_chunk16_for_produce_pile10k_cache_for_attn_distance.json"
 
     tokenized_dataset, tokenizer = first_map_then_remove_last(config_fpath)  ### Use once!
     tokenized_dataset, tokenizer = load_from_arrow_dir(config_fpath)  ### comment out ONLY dir exists.
