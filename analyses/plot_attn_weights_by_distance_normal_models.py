@@ -9,7 +9,7 @@ import pickle
 
 from utils import model_utils
 
-plt.rcParams.update({'font.size': 10, 'font.weight': 'normal'})
+plt.rcParams.update({'font.size': 12, 'font.weight': 'normal'})
 
 from plot_attn_weights_by_distance import (
     collate_fn,
@@ -86,7 +86,10 @@ def get_attention_weights_n_entropy_per_batch_mean_head(
 
 def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
     n_layers = len(attn_weights_x_batches["fwd"])
-    n_cols = 6
+    if n_layers % 6 == 0:
+        n_cols = 6
+    else:
+        n_cols = 8
     n_rows = int(np.ceil(n_layers / n_cols))
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
     axes = axes.flatten()
@@ -130,7 +133,10 @@ def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
 
 def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
     n_layers = len(attn_weights_x_batches["fwd"])
-    n_cols = 6
+    if n_layers % 6 == 0:
+        n_cols = 6
+    else:
+        n_cols = 8
     n_rows = int(np.ceil(n_layers / n_cols))
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
     axes = axes.flatten()
@@ -175,7 +181,10 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
 
 def visualize_attention_weights_entropy(attn_weights_x_batches):
     n_layers = len(attn_weights_x_batches["fwd"])
-    n_cols = 6
+    if n_layers % 6 == 0:
+        n_cols = 6
+    else:
+        n_cols = 8
     n_rows = int(np.ceil(n_layers / n_cols))
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
     axes = axes.flatten()

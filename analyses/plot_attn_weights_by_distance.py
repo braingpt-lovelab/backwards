@@ -9,7 +9,7 @@ import pickle
 
 from utils import model_utils
 
-plt.rcParams.update({'font.size': 10, 'font.weight': 'normal'})
+plt.rcParams.update({'font.size': 12, 'font.weight': 'normal'})
 
 def collate_fn(batch):
     input_ids = [sample["input_ids"] for sample in batch]
@@ -267,7 +267,10 @@ def get_attention_weights_n_entropy_per_batch_mean_head(
 
 def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
     n_layers = len(attn_weights_x_batches["fwd"])
-    n_cols = 6
+    if n_layers % 6 == 0:
+        n_cols = 6
+    else:
+        n_cols = 8
     n_rows = int(np.ceil(n_layers / n_cols))
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
     axes = axes.flatten()
@@ -275,28 +278,39 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
     for layer_index in range(n_layers):
         ax = axes[layer_index]
 
+        if layer_index == n_layers - 1:
+            label_init = "Init"
+            label_fwd = "Fwd"
+            label_rev = "Bwd"
+            label_perm = "Perm"
+        else:
+            label_init = ""
+            label_fwd = ""
+            label_rev = ""
+            label_perm = ""
+
         # Plot mean line
         marker_size = plt.rcParams['lines.markersize'] ** 2
         ax.plot(
             attn_weights_x_batches["fwd"][layer_index]["unique_distances"],
             attn_weights_x_batches["fwd_init"][layer_index]["mean_weights_norm_ranks"],
-            label="Init", color="grey", alpha=1, #s=marker_size
+            label=label_init, color="grey", alpha=1,
         )
 
         ax.plot(
             attn_weights_x_batches["fwd"][layer_index]["unique_distances"],
             attn_weights_x_batches["fwd"][layer_index]["mean_weights_norm_ranks"],
-            label="Fwd", color="#E8B7D4", alpha=1, #s=marker_size
+            label=label_fwd, color="#E8B7D4", alpha=1,
         )
         ax.plot(
             attn_weights_x_batches["rev"][layer_index]["unique_distances"],
             attn_weights_x_batches["rev"][layer_index]["mean_weights_norm_ranks"],
-            label="Rev", color="#FF7B89", alpha=1, #s=marker_size
+            label=label_rev, color="#FF7B89", alpha=1,
         )
         ax.plot(
             attn_weights_x_batches["perm"][layer_index]["unique_distances"],
             attn_weights_x_batches["perm"][layer_index]["mean_weights_norm_ranks"],
-            label="Perm", color="#5874DC", alpha=1, #s=marker_size
+            label=label_perm, color="#5874DC", alpha=1,
         )
 
         # Customize plot
@@ -318,15 +332,19 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
         # Add grid
         ax.grid(True, linestyle='--', alpha=0.5)
     
-    plt.legend()
-    plt.tight_layout()
+    fig.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 0.05))
+    fig.tight_layout()
+    fig.subplots_adjust(bottom=0.3)
     plt.savefig(f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.pdf')
     print(f"Saved attention weights norm ranks by distance plot to disk: figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.pdf")
 
 
 def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
     n_layers = len(attn_weights_x_batches["fwd"])
-    n_cols = 6
+    if n_layers % 6 == 0:
+        n_cols = 6
+    else:
+        n_cols = 8
     n_rows = int(np.ceil(n_layers / n_cols))
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
     axes = axes.flatten()
@@ -334,23 +352,34 @@ def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
     for layer_index in range(n_layers):
         ax = axes[layer_index]
 
+        if layer_index == n_layers - 1:
+            label_init = "Init"
+            label_fwd = "Fwd"
+            label_rev = "Bwd"
+            label_perm = "Perm"
+        else:
+            label_init = ""
+            label_fwd = ""
+            label_rev = ""
+            label_perm = ""
+
         # Plot each model's mean entropy per row as curve
         ax.plot(
             attn_weights_x_batches["fwd_init"][layer_index]["mean_weights_per_row_entropy"],
-            label="Init", color="grey", alpha=1
+            label=label_init, color="grey", alpha=1
         )
     
         ax.plot(
             attn_weights_x_batches["fwd"][layer_index]["mean_weights_per_row_entropy"],
-            label="Fwd", color="#E8B7D4", alpha=1
+            label=label_fwd, color="#E8B7D4", alpha=1
         )
         ax.plot(
             attn_weights_x_batches["rev"][layer_index]["mean_weights_per_row_entropy"],
-            label="Rev", color="#FF7B89", alpha=1
+            label=label_rev, color="#FF7B89", alpha=1
         )
         ax.plot(
             attn_weights_x_batches["perm"][layer_index]["mean_weights_per_row_entropy"],
-            label="Perm", color="#5874DC", alpha=1
+            label=label_perm, color="#5874DC", alpha=1
         )
 
         # Customize plot
@@ -372,21 +401,36 @@ def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
         # Add grid
         ax.grid(True, linestyle='--', alpha=0.5)
 
-    plt.legend()
-    plt.tight_layout()
+    fig.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 0.05))
+    fig.tight_layout()
+    fig.subplots_adjust(bottom=0.3)
     plt.savefig(f'figs/attn_weights_entropy_per_row_{model_size}_seed{random_seed}.pdf')
     print(f"Saved attention weights entropy per row plot to disk: figs/attn_weights_entropy_per_row_{model_size}_seed{random_seed}.pdf")
 
 
 def visualize_attention_weights_entropy(attn_weights_x_batches):
     n_layers = len(attn_weights_x_batches["fwd"])
-    n_cols = 6
+    if n_layers % 6 == 0:
+        n_cols = 6
+    else:
+        n_cols = 8
     n_rows = int(np.ceil(n_layers / n_cols))
     fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
     axes = axes.flatten()
 
     for layer_index in range(n_layers):
         ax = axes[layer_index]
+
+        if layer_index == n_layers - 1:
+            label_init = "Init"
+            label_fwd = "Fwd"
+            label_rev = "Bwd"
+            label_perm = "Perm"
+        else:
+            label_init = ""
+            label_fwd = ""
+            label_rev = ""
+            label_perm = ""
 
         # Plot each model's mean entropy as barplot
         bar_x = np.arange(len(model_types))
@@ -396,7 +440,11 @@ def visualize_attention_weights_entropy(attn_weights_x_batches):
             attn_weights_x_batches["perm"][layer_index]["mean_weights_entropy"]
         ]
         bar_heights = [float(height) for height in bar_heights]
-        bar_labels = ["Fwd", "Rev", "Perm"]
+        bar_labels = [
+            label_fwd,
+            label_rev,
+            label_perm
+        ]
         ax.bar(bar_x, bar_heights, color=["blue", "red", "cyan"], alpha=0.5)
         ax.set_xticks(bar_x)
         ax.set_xticklabels(bar_labels)
