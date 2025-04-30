@@ -588,9 +588,6 @@ if __name__ == "__main__":
         model2_name = "gpt2-large_scratch_neuro_tokenizer_bayes_rev"
         model3_name = "gpt2-large_scratch_neuro_tokenizer_bayes_perm"
     
-    # NOTE: for now we use the same fwd and rev models for convenience but
-    # varying perm model seeds. But ideally, we should have the same seed for
-    # fwd, rev, and perm models.
     if int(model_seed) > 1:
         model1_name += f"_seed{model_seed}"
         model2_name += f"_seed{model_seed}"
