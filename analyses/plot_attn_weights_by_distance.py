@@ -592,6 +592,8 @@ if __name__ == "__main__":
     # varying perm model seeds. But ideally, we should have the same seed for
     # fwd, rev, and perm models.
     if int(model_seed) > 1:
+        model1_name += f"_seed{model_seed}"
+        model2_name += f"_seed{model_seed}"
         model3_name += f"_seed{model_seed}"
         model_size += f"_seed{model_seed}"
 
