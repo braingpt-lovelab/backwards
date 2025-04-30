@@ -305,8 +305,8 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
     
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png')
-    print(f"Saved attention weights norm ranks by distance plot to disk: figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.png")
+    plt.savefig(f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.pdf')
+    print(f"Saved attention weights norm ranks by distance plot to disk: figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.pdf")
 
 
 def visualize_attention_weights_col_norm_ranks(attn_weights_x_batches):
@@ -354,8 +354,8 @@ def visualize_attention_weights_col_norm_ranks(attn_weights_x_batches):
 
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f'figs/attn_weights_col_norm_ranks_{model_size}_seed{random_seed}.png')
-    print(f"Saved attention weights col norm ranks plot to disk: figs/attn_weights_col_norm_ranks_{model_size}_seed{random_seed}.png")
+    plt.savefig(f'figs/attn_weights_col_norm_ranks_{model_size}_seed{random_seed}.pdf')
+    print(f"Saved attention weights col norm ranks plot to disk: figs/attn_weights_col_norm_ranks_{model_size}_seed{random_seed}.pdf")
 
 
 def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
@@ -403,8 +403,8 @@ def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
 
     plt.legend()
     plt.tight_layout()
-    plt.savefig(f'figs/attn_weights_entropy_per_row_{model_size}_seed{random_seed}.png')
-    print(f"Saved attention weights entropy per row plot to disk: figs/attn_weights_entropy_per_row_{model_size}_seed{random_seed}.png")
+    plt.savefig(f'figs/attn_weights_entropy_per_row_{model_size}_seed{random_seed}.pdf')
+    print(f"Saved attention weights entropy per row plot to disk: figs/attn_weights_entropy_per_row_{model_size}_seed{random_seed}.pdf")
 
 
 def visualize_attention_weights_entropy(attn_weights_x_batches):
@@ -447,8 +447,8 @@ def visualize_attention_weights_entropy(attn_weights_x_batches):
         ax.grid(True, linestyle='--', alpha=0.5)
 
     plt.tight_layout()
-    plt.savefig(f'figs/attn_weights_entropy_{model_size}_seed{random_seed}.png')
-    print(f"Saved attention weights entropy plot to disk: figs/attn_weights_entropy_{model_size}_seed{random_seed}.png")
+    plt.savefig(f'figs/attn_weights_entropy_{model_size}_seed{random_seed}.pdf')
+    print(f"Saved attention weights entropy plot to disk: figs/attn_weights_entropy_{model_size}_seed{random_seed}.pdf")
 
 
 def main():
