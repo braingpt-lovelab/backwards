@@ -49,81 +49,144 @@ model_list_noseeds = {
 model_list = {
     "gpt2": {
         "gpt2_scratch_neuro_tokenizer_bayes_fwd": {
-            "llm": "GPT2-124M (fwd seed1)",
+            "llm": "GPT2-124M (Fwd seed1)",
             "color": '#758EB7',
             "alpha": 0.8,
             "hatch": "",
         },
         "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed2": {
-            "llm": "GPT2-124M (fwd seed2)",
+            "llm": "GPT2-124M (Fwd seed2)",
             "color": '#758EB7',
             "alpha": 0.8,
             "hatch": "..",
         },
         "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed3": {
-            "llm": "GPT2-124M (fwd seed3)",
+            "llm": "GPT2-124M (Fwd seed3)",
             "color": '#758EB7',
             "alpha": 0.8,
             "hatch": "oo",
         },
         "gpt2_scratch_neuro_tokenizer_bayes_rev": {
-            "llm": "GPT2-124M (rev seed1)",
+            "llm": "GPT2-124M (Bwd seed1)",
             "color": '#758EB7',
             "alpha": 0.8,
             "hatch": "\\",
-        }
+        },
+        "gpt2_scratch_neuro_tokenizer_bayes_rev_seed2": {
+            "llm": "GPT2-124M (Bwd seed2)",
+            "color": '#758EB7',
+            "alpha": 0.8,
+            "hatch": "..",
+        },
+        "gpt2_scratch_neuro_tokenizer_bayes_rev_seed3": {
+            "llm": "GPT2-124M (Bwd seed3)",
+            "color": '#758EB7',
+            "alpha": 0.8,
+            "hatch": "oo",
+        },
+        "gpt2_scratch_neuro_tokenizer_bayes_perm": {
+            "llm": "GPT2-124M (Perm seed1)",
+        },
+        "gpt2_scratch_neuro_tokenizer_bayes_perm_seed2": {
+            "llm": "GPT2-124M (Perm seed2)",
+        },
+        "gpt2_scratch_neuro_tokenizer_bayes_perm_seed3": {
+            "llm": "GPT2-124M (Perm seed3)",
+        },
     },
     "gpt2-medium": {
         "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd": {
-            "llm": "GPT2-355M (fwd seed1)",
+            "llm": "GPT2-355M (Fwd seed1)",
             "color": '#6F5F90',
             "alpha": 0.8,
             "hatch": "",
         },
         "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed2": {
-            "llm": "GPT2-355M (fwd seed2)",
+            "llm": "GPT2-355M (Fwd seed2)",
             "color": '#6F5F90',
             "alpha": 0.8,
             "hatch": "..",
         },
         "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed3": {
-            "llm": "GPT2-355M (fwd seed3)",
+            "llm": "GPT2-355M (Fwd seed3)",
             "color": '#6F5F90',
             "alpha": 0.8,
             "hatch": "oo",
         },
         "gpt2-medium_scratch_neuro_tokenizer_bayes_rev": {
-            "llm": "GPT2-355M (rev seed1)",
+            "llm": "GPT2-355M (Bwd seed1)",
             "color": '#6F5F90',
             "alpha": 0.8,
             "hatch": "\\",
-        }
+        },
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_rev_seed2": {
+            "llm": "GPT2-355M (Bwd seed2)",
+            "color": '#6F5F90',
+            "alpha": 0.8,
+            "hatch": "..",
+        },
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_rev_seed3": {
+            "llm": "GPT2-355M (Bwd seed3)",
+            "color": '#6F5F90',
+            "alpha": 0.8,
+            "hatch": "oo",
+        },
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_perm": {
+            "llm": "GPT2-355M (Perm seed1)",
+        },
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_perm_seed2": {
+            "llm": "GPT2-355M (Perm seed2)",
+        },
+        "gpt2-medium_scratch_neuro_tokenizer_bayes_perm_seed3": {
+            "llm": "GPT2-355M (Perm seed3)",
+        },
     },
     "gpt2-large": {
         "gpt2-large_scratch_neuro_tokenizer_bayes_fwd": {
-            "llm": "GPT2-774M (fwd seed1)",
+            "llm": "GPT2-774M (Fwd seed1)",
             "color": '#8A5082',
             "alpha": 0.8,
             "hatch": "",
         },
         "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed2": {
-            "llm": "GPT2-774M (fwd seed2)",
+            "llm": "GPT2-774M (Fwd seed2)",
             "color": '#8A5082',
             "alpha": 0.8,
             "hatch": "..",
         },
         "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed3": {
-            "llm": "GPT2-774M (fwd seed3)",
+            "llm": "GPT2-774M (Fwd seed3)",
             "color": '#8A5082',
             "alpha": 0.8,
             "hatch": "oo",
         },
         "gpt2-large_scratch_neuro_tokenizer_bayes_rev": {
-            "llm": "GPT2-774M (rev seed1)",
+            "llm": "GPT2-774M (Bwd seed1)",
             "color": '#8A5082',
             "alpha": 0.8,
             "hatch": "\\",
-        }
+        },
+        "gpt2-large_scratch_neuro_tokenizer_bayes_rev_seed2": {
+            "llm": "GPT2-774M (Bwd seed2)",
+            "color": '#8A5082',
+            "alpha": 0.8,
+            "hatch": "..",
+        },
+        "gpt2-large_scratch_neuro_tokenizer_bayes_rev_seed3": {
+            "llm": "GPT2-774M (Bwd seed3)",
+            "color": '#8A5082',
+            "alpha": 0.8,
+            "hatch": "oo",
+        },
+        "gpt2-large_scratch_neuro_tokenizer_bayes_perm": {
+            "llm": "GPT2-774M (Perm seed1)",
+        },
+        "gpt2-large_scratch_neuro_tokenizer_bayes_perm_seed2": {
+            "llm": "GPT2-774M (Perm seed2)",
+        },
+        "gpt2-large_scratch_neuro_tokenizer_bayes_perm_seed3": {
+            "llm": "GPT2-774M (Perm seed3)",
+        },
     }
 }
 
