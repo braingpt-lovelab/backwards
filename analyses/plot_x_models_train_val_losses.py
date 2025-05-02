@@ -121,15 +121,15 @@ def plot_train_val_losses():
     with open("results/x_models_train_val_losses.pkl", "rb") as f:
         all_data = pickle.load(f)
 
-    # Set up the figure: 2 rows (train, val), 9 columns (3 models x 3 seeds x 3 sizes)
-    fig, axes = plt.subplots(2, 9, figsize=(16, 4))
+    # Set up the figure: 4 rows (train, train diff, val, val diff), 9 columns (3 models x 3 seeds)
+    fig, axes = plt.subplots(4, 9, figsize=(16, 8))
     plt.subplots_adjust(hspace=0.3, wspace=0.2)
 
     # Define model sizes and seeds
     model_sizes = ["GPT-2 (124M)", "GPT-2 (355M)", "GPT-2 (774M)"]
     seeds = ["seed1", "seed2", "seed3"]
-    model_labels = ["Fwd", "Rev", "Perm"]
-    colors = ['#E8B7D4', '#6AAB9C', '#5874DC']  # Colors for fwd, rev, perm
+    model_labels = ["Fwd", "Bwd", "Perm"]
+    colors = ['#E8B7D4', '#FF7B89', '#5874DC']  # Colors for fwd, rev, perm
     alpha = 0.6
     lw = plt.rcParams['lines.linewidth'] ** 0.5
 
@@ -140,7 +140,7 @@ def plot_train_val_losses():
             col_start = size_idx * 3 + seed_idx
             model_names = comparison[model_size][seed]
 
-            # Plot training perplexity (top row)
+            # Plot training perplexity (row 1)
             ax_train = axes[0, col_start]
             for model_idx, model_name in enumerate(model_names):
                 if model_name in all_data:
@@ -150,24 +150,59 @@ def plot_train_val_losses():
             ax_train.set_yscale("log")
             ax_train.spines['top'].set_visible(False)
             ax_train.spines['right'].set_visible(False)
+            ax_train.set_xticks([])
             if col_start == 0:
-                ax_train.set_ylabel("Training Loss")
+                ax_train.set_ylabel("Train log(perplexity)")
 
-            # Plot validation perplexity (bottom row)
-            ax_val = axes[1, col_start]
+            # Plot training perplexity difference (Fwd - Rev) (row 2)
+            ax_train_diff = axes[1, col_start]
+            if model_names[0] in all_data and model_names[1] in all_data:
+                fwd_train_ppl = all_data[model_names[0]]["training_ppl"]
+                rev_train_ppl = all_data[model_names[1]]["training_ppl"]
+                train_diff = [np.log(fwd) - np.log(rev) for fwd, rev in zip(fwd_train_ppl, rev_train_ppl)]
+                ax_train_diff.plot(train_diff, color='blue', alpha=alpha, lw=lw)
+            ax_train_diff.set_title(f"Fwd - Bwd")
+            ax_train_diff.spines['top'].set_visible(False)
+            ax_train_diff.spines['right'].set_visible(False)
+            ax_train_diff.plot([0, len(train_diff)], [0, 0], color='grey', lw=1, ls='--')
+            ax_train_diff.set_ylim([-0.1, 0.1])
+            ax_train_diff.set_xticks([])
+            if col_start == 0:
+                ax_train_diff.set_ylabel("Train Diff")
+
+            # Plot validation perplexity (row 3)
+            ax_val = axes[2, col_start]
             for model_idx, model_name in enumerate(model_names):
                 if model_name in all_data:
                     val_ppl = all_data[model_name]["validation_ppl"]
                     ax_val.plot(val_ppl, label=model_labels[model_idx], color=colors[model_idx], alpha=alpha, lw=lw)
-            if col_start == 0:
-                ax_val.set_ylabel("Validation Loss")
-            ax_val.set_xlabel("Steps")
             ax_val.set_yscale("log")
             ax_val.spines['top'].set_visible(False)
             ax_val.spines['right'].set_visible(False)
+            ax_val.set_xticks([])
+            if col_start == 0:
+                ax_val.set_ylabel("Validation log(perplexity)")
 
+            # Plot validation perplexity difference (Fwd - Rev) (row 4)
+            ax_val_diff = axes[3, col_start]
+            if model_names[0] in all_data and model_names[1] in all_data:
+                fwd_val_ppl = all_data[model_names[0]]["validation_ppl"]
+                rev_val_ppl = all_data[model_names[1]]["validation_ppl"]
+                val_diff = [np.log(fwd) - np.log(rev) for fwd, rev in zip(fwd_val_ppl, rev_val_ppl)]
+                ax_val_diff.plot(val_diff, color='blue', alpha=alpha, lw=lw)
+            ax_val_diff.set_title(f"Fwd - Bwd")
+            ax_val_diff.set_xlabel("Logging Steps")
+            ax_val_diff.spines['top'].set_visible(False)
+            ax_val_diff.spines['right'].set_visible(False)
+            ax_val_diff.plot([0, len(val_diff)], [0, 0], color='grey', lw=1, ls='--')
+            ax_val_diff.set_ylim([-0.1, 0.1])
+            ax_val_diff.set_xticks([])
+            if col_start == 0:
+                ax_val_diff.set_ylabel("Validation Diff")
+
+    axes[0, -1].legend()
+    axes[2, -1].legend()
     plt.tight_layout()
-    plt.legend()
     plt.savefig("figs/train_val_losses_comparison.pdf")
     plt.close()
 
