@@ -39,10 +39,10 @@ def evaluate(LLM, dataloader, tokenizer):
     all_batches_ppl = []
     all_batches_tokens_n_ppls = {}
     for i, batch in enumerate(dataloader):
-        # Plot the first and last 5 tokens
-        print(f"\nBatch {i}")
-        print(f"{tokenizer.convert_ids_to_tokens(batch['input_ids'][0][:5])}")
-        print(f"{tokenizer.convert_ids_to_tokens(batch['input_ids'][0][-5:])}")
+        # # Plot the first and last 5 tokens
+        # print(f"\nBatch {i}")
+        # print(f"{tokenizer.convert_ids_to_tokens(batch['input_ids'][0][:5])}")
+        # print(f"{tokenizer.convert_ids_to_tokens(batch['input_ids'][0][-5:])}")
         with torch.cuda.amp.autocast():
             labels = batch["labels"].to(LLM.device)
             batch = {
@@ -65,7 +65,7 @@ def evaluate(LLM, dataloader, tokenizer):
             true_log_probs = log_probs.gather(dim=-1, index=labels.unsqueeze(-1)).squeeze(-1).float()
             loss = -true_log_probs.mean()
             ppl = math.exp(loss.item())
-            print(f"PPL: {ppl}")
+            # print(f"PPL: {ppl}")
             all_batches_ppl.append(ppl)
         
         # Save each batch's tokens and ppls for further text analysis
@@ -79,59 +79,57 @@ def evaluate(LLM, dataloader, tokenizer):
 
 
 def main(llm, dataset_type, sample_percentage):
-    config_fpath = os.path.join(configs_dir, f"{llm}.json")
-    with open(config_fpath, "r") as f:
-        args = json.load(f)
-    
-    args["cache_dir_train"] = os.path.join(reference_dir, args["cache_dir_train"])
-    args["cache_dir_validation"] = os.path.join(reference_dir, args["cache_dir_validation"])
-    if "backwards" in llm:
-        tokenizer_dir = "cache/gpt2_neuro_tokenizer_backwards"
-    else:
-        tokenizer_dir = "cache/gpt2_neuro_tokenizer"
-    args["custom_tokenizer"] = os.path.join(reference_dir, tokenizer_dir)
-    args["spt"] = ""
-    args["batch_size"] = 1
-    args = argparse.Namespace(**args)
-
-    # Load dataset
-    
-    
-    if dataset_type == "train":
-        dataset = datasets.Dataset.load_from_disk(args.cache_dir_train)
-        if sample_percentage < 1.0:
-            dataset = dataset.shuffle(seed=42).select(
-                range(int(len(dataset) * sample_percentage))
-            )
-    else:
-        dataset = datasets.Dataset.load_from_disk(args.cache_dir_validation)
-
-    print(f"Loading {len(dataset)} samples for {dataset_type}")
-    dataloader = DataLoader(
-        dataset,
-        batch_size=args.batch_size,
-        collate_fn=collate_fn,
-    )
-
-    # Load model
-    LLM, tokenizer = model_utils.load_model_and_tokenizer(llm)
-
-    # Run model on data to get ppl
-    criterion = torch.nn.CrossEntropyLoss(ignore_index=-1)
-    with torch.no_grad():
-        LLM.eval()
-        all_batches_ppl, all_batches_tokens_n_ppls = evaluate(LLM, dataloader, tokenizer)
-    
-    # Save results
-    print(results_dir)
-    np.save(
-        os.path.join(results_dir, f"all_batches_ppl_{dataset_type}.npy"),
-        np.array(all_batches_ppl)
-    )
-
-    # with open(os.path.join(results_dir, f"all_batches_tokens_n_logprobs_n_ppls_{dataset_type}.json"), "w") as f:
-    #     json.dump(all_batches_tokens_n_ppls, f, indent=4)
+    result_fpath = os.path.join(results_dir, f"all_batches_ppl_{dataset_type}.npy")
+    if not os.path.exists(result_fpath):
+        config_fpath = os.path.join(configs_dir, f"{llm}.json")
+        with open(config_fpath, "r") as f:
+            args = json.load(f)
         
+        args["cache_dir_train"] = os.path.join(reference_dir, args["cache_dir_train"])
+        args["cache_dir_validation"] = os.path.join(reference_dir, args["cache_dir_validation"])
+        if "backwards" in llm:
+            tokenizer_dir = "cache/gpt2_neuro_tokenizer_backwards"
+        else:
+            tokenizer_dir = "cache/gpt2_neuro_tokenizer"
+        args["custom_tokenizer"] = os.path.join(reference_dir, tokenizer_dir)
+        args["spt"] = ""
+        args["batch_size"] = 1
+        args = argparse.Namespace(**args)
+
+        # Load dataset
+        if dataset_type == "train":
+            dataset = datasets.Dataset.load_from_disk(args.cache_dir_train)
+            if sample_percentage < 1.0:
+                dataset = dataset.shuffle(seed=42).select(
+                    range(int(len(dataset) * sample_percentage))
+                )
+        else:
+            dataset = datasets.Dataset.load_from_disk(args.cache_dir_validation)
+
+        print(f"Loading {len(dataset)} samples for {dataset_type}")
+        dataloader = DataLoader(
+            dataset,
+            batch_size=args.batch_size,
+            collate_fn=collate_fn,
+        )
+
+        # Load model
+        LLM, tokenizer = model_utils.load_model_and_tokenizer(llm)
+
+        # Run model on data to get ppl
+        criterion = torch.nn.CrossEntropyLoss(ignore_index=-1)
+        with torch.no_grad():
+            LLM.eval()
+            all_batches_ppl, all_batches_tokens_n_ppls = evaluate(LLM, dataloader, tokenizer)
+        
+        # Save results
+        np.save(
+            os.path.join(results_dir, f"all_batches_ppl_{dataset_type}.npy"),
+            np.array(all_batches_ppl)
+        )
+    else:
+        print(f"Results already exist at {result_fpath}. Skipping evaluation.")
+
 
 if __name__ == "__main__":
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -149,23 +147,8 @@ if __name__ == "__main__":
     dataset_type = args.dataset_type
     sample_percentage = args.sample_percentage
 
-    llms = [
-        "gpt2_scratch_neuro_tokenizer_bayes_fwd",
-        "gpt2_scratch_neuro_tokenizer_bayes_rev",
-        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed2",
-        "gpt2_scratch_neuro_tokenizer_bayes_fwd_seed3",
-        "gpt2_scratch_neuro_tokenizer_bayes_perm",
-        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd",
-        "gpt2-medium_scratch_neuro_tokenizer_bayes_rev",
-        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed2",
-        "gpt2-medium_scratch_neuro_tokenizer_bayes_fwd_seed3",
-        "gpt2-medium_scratch_neuro_tokenizer_bayes_perm",
-        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd",
-        "gpt2-large_scratch_neuro_tokenizer_bayes_rev",
-        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed2",
-        "gpt2-large_scratch_neuro_tokenizer_bayes_fwd_seed3",
-        "gpt2-large_scratch_neuro_tokenizer_bayes_perm",
-    ]
+    model_list = model_utils.model_list
+    llms = [llm for llm_family in model_list for llm in model_list[llm_family]]
 
     reference_dir = "/home/ken/projects/backwards/model_training"
     configs_dir = "/home/ken/projects/backwards/model_training/configs"
