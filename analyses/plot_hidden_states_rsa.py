@@ -211,12 +211,12 @@ def main():
     with torch.no_grad():
         for seed in comparison.keys():
             # Fig is created at seed level.
-            # Each row is a model family, each column is a pair of models 
-            # of (fwd vs rev, fwd vs perm, rev vs perm)
-            fig, axes = plt.subplots(3, 3, figsize=(15, 10))
+            # Each column is a model family, each subplot contains all model comparisons
+            fig, axes = plt.subplots(1, 3, figsize=(15, 5))
             axes = axes.flatten()
             ax_idx = 0
             for model_family in comparison[seed].keys():
+                ax = axes[ax_idx]
                 for i in range(len(comparison[seed][model_family])):
                     for j in range(i + 1, len(comparison[seed][model_family])):
                         model1_name = comparison[seed][model_family][i]
@@ -239,9 +239,8 @@ def main():
                         seq_len = gpt_config.n_positions
                         print(f"num_layers: {num_layers}, hidden_size: {hidden_size}, seq_len: {seq_len}")
 
-                        # Per subplot for each (model1, model2) pair
+                        # Per subplot for each model family
                         # across all layers
-                        ax = axes[ax_idx]
                         rsa_scores_x_layers_rsa_mean = []
                         rsa_scores_x_layers_rsa_std = []
                         for layer_idx in range(num_layers):
@@ -302,17 +301,18 @@ def main():
 
                         # Plot for all layers at once
                         if "fwd" in model1_name and "rev" in model2_name:
-                            ax.set_title(f"{model_family}, Fwd vs Bwd")
+                            label = "Fwd vs Bwd"
                         elif "fwd" in model1_name and "perm" in model2_name:
-                            ax.set_title(f"{model_family}, Fwd vs Perm")
+                            label = "Fwd vs Perm"
                         elif "rev" in model1_name and "perm" in model2_name:
-                            ax.set_title(f"{model_family}, Bwd vs Perm")
+                            label = "Bwd vs Perm"
                         else:
                             raise ValueError("Invalid model names for comparison.")
                         
                         ax.plot(
                             range(num_layers), rsa_scores_x_layers_rsa_mean,
-                            label=f"{model1_name} vs {model2_name}"
+                            label=label,
+                            marker="o",
                         )
                         ax.fill_between(
                             range(num_layers), 
@@ -321,16 +321,19 @@ def main():
                             alpha=0.2
                         )
 
-                        ax.set_xlabel("Layer")
-                        ax.set_ylabel(f"RSA Score ({rsa_metric})")
-                        ax.set_ylim(0, 1)
-                        ax.spines['top'].set_visible(False)
-                        ax.spines['right'].set_visible(False)
-                        ax_idx += 1
+                ax.set_title(f"{model_family}")
+                ax.set_xlabel("Layer")
+                ax.set_ylabel(f"RSA Score ({rsa_metric})")
+                ax.set_ylim(0, 1)
+                ax.legend()
+                ax.spines['top'].set_visible(False)
+                ax.spines['right'].set_visible(False)
+                ax.grid(True)
+                ax_idx += 1
         
             # Save the figure for this seed
             plt.tight_layout()
-            plt.savefig(f"figs/rsa_results_{rsa_metric}_{seed}.png")
+            plt.savefig(f"figs/rsa_results_{rsa_metric}_{seed}.pdf")
             exit()
 
 
