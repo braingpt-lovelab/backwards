@@ -1,8 +1,11 @@
+# Set working directory
+setwd("/Users/ken/Desktop/LoveLab_desktop/_postdoc/BrainGPT/backwards/analyses")
+
 # Load required package
 library(lme4)
 
 # Read the data
-data <- read.csv("./model_performance_x_direction_x_size_x_item.csv")
+data <- read.csv("model_performance_x_direction_x_size_x_item.csv")
 
 # Convert to factors
 data$direction <- as.factor(data$direction)

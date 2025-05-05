@@ -90,6 +90,8 @@ comparison_styles = {
 
 def get_llm_accuracies(model_results_dir, use_human_abstract=True):
     accuracies = {}
+    all_data = []   # export as csv for R analysis   
+    model_id = 1    # use in R analysis
     for model_family, directions in comparison.items():
         accuracies[model_family] = {}
         for direction, models in directions.items():
@@ -115,8 +117,30 @@ def get_llm_accuracies(model_results_dir, use_human_abstract=True):
                 acc = scorer_acc(PPL_A_and_B, labels)
                 print(f"Accuracy: {acc}")
                 per_direction_models_accs.append(acc)
+
+                # Process each item
+                for item_index in range(labels.shape[0]):
+                    # Create a data point for this item
+                    data_point = {
+                        'model_id': model_id,
+                        'direction': 0 if "rev" in model else 1,
+                        'model_size': 2 if "medium" in model else (3 if "large" in model else 1),
+                        'item': item_index,
+                        'correct': int(np.argmin(PPL_A_and_B[item_index]) == labels[item_index])
+                    }
+                    all_data.append(data_point)
+                model_id += 1
+
             accuracies[model_family][direction]["acc"] = np.mean(per_direction_models_accs)
             accuracies[model_family][direction]["sem"] = stats.sem(per_direction_models_accs)
+    
+    # Convert to DataFrame
+    df = pd.DataFrame(all_data)
+    
+    # Save the data for R analysis
+    df.to_csv("model_performance_x_direction_x_size_x_item.csv", index=False)
+    print("Data saved as model_performance_x_direction_x_size_x_item.csv")
+
     return accuracies
 
 
