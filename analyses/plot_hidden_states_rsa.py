@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import torch.nn.functional as F
 import numpy as np
 import transformers
+import scipy.stats as stats
 
 comparison = {
     "seed1": {
@@ -202,6 +203,15 @@ def rsa(model1_RDM, model2_RDM, rsa_metric="cosine"):
     # Compute the RSA scores
     if rsa_metric == "cosine":
         rsa_scores = F.cosine_similarity(model1_flat, model2_flat, dim=1)
+    elif rsa_metric == "spearman":
+        rsa_scores = torch.zeros(bsz)
+        for i in range(bsz):
+            # Compute Spearman correlation
+            spearman_corr, _ = stats.spearmanr(model1_flat[i].cpu().numpy(), model2_flat[i].cpu().numpy())
+            rsa_scores[i] = spearman_corr
+    elif rsa_metric == "euclidean":
+        # Compute Euclidean distance
+        rsa_scores = torch.sqrt(torch.sum((model1_flat - model2_flat) ** 2, dim=1))
 
     return rsa_scores
 
@@ -212,7 +222,7 @@ def main():
         for seed in comparison.keys():
             # Fig is created at seed level.
             # Each column is a model family, each subplot contains all model comparisons
-            fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+            fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
             axes = axes.flatten()
             ax_idx = 0
             for model_family in comparison[seed].keys():
@@ -302,10 +312,13 @@ def main():
                         # Plot for all layers at once
                         if "fwd" in model1_name and "rev" in model2_name:
                             label = "Fwd vs Bwd"
+                            color = "#6AAB9C"
                         elif "fwd" in model1_name and "perm" in model2_name:
                             label = "Fwd vs Perm"
+                            color = "#E06C7B"
                         elif "rev" in model1_name and "perm" in model2_name:
                             label = "Bwd vs Perm"
+                            color = "#5874DC"
                         else:
                             raise ValueError("Invalid model names for comparison.")
                         
@@ -313,12 +326,14 @@ def main():
                             range(num_layers), rsa_scores_x_layers_rsa_mean,
                             label=label,
                             marker="o",
+                            color=color,
                         )
                         ax.fill_between(
                             range(num_layers), 
                             np.array(rsa_scores_x_layers_rsa_mean) - np.array(rsa_scores_x_layers_rsa_std),
                             np.array(rsa_scores_x_layers_rsa_mean) + np.array(rsa_scores_x_layers_rsa_std),
-                            alpha=0.2
+                            alpha=0.2,
+                            color=color,
                         )
 
                 ax.set_title(f"{model_family}")
@@ -334,12 +349,11 @@ def main():
             # Save the figure for this seed
             plt.tight_layout()
             plt.savefig(f"figs/rsa_results_{rsa_metric}_{seed}.pdf")
-            exit()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--random_seed", type=int, default=1, help="Random seed for sampling")
+    parser.add_argument("--random_seed", type=int, default=1, help="Random seed for text sampling")
     parser.add_argument("--rsa_metric", type=str, default="cosine", help="Metric to use for RSA")
     args = parser.parse_args()
     random_seed = args.random_seed
@@ -347,7 +361,6 @@ if __name__ == "__main__":
 
     batch_size = 4
     max_num_batches = 16
-    num_layers = 12
     seq_len = 1024
     main()
 
