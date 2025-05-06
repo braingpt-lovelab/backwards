@@ -236,16 +236,18 @@ def plot_combined_correlations(corr_all_models_and_human, who):
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8, 3), sharey=True)
 
     # Plot 1: Model-Model vs Model-Human correlations (from plot_model_model_and_model_human_correlation)
-    bar_width = 0.35
+    bar_width = 0.25
     ax1.bar(
-        np.arange(2),
+        [0, 0.4],
         [avg_model_model_corr, avg_model_human_corr],
         bar_width,
         yerr=[std_model_model_corr, std_model_human_corr],
         capsize=5,
-        color=["#33539E", "#7F1CD6"],
-        tick_label=['Model-Model', 'Model-Human']
+        color=['#33539E', '#7F1CD6'],
+
     )
+    ax1.set_xticks([0, 0.4])
+    ax1.set_xticklabels(["Model-Model", "Model-Human"])
     ax1.set_ylabel('Correlation')
     ax1.set_ylim(0, 1)
     ax1.spines['top'].set_visible(False)
@@ -268,7 +270,11 @@ def plot_combined_correlations(corr_all_models_and_human, who):
         label='Bwd', color='#FF7B89'
     )
     ax2.set_xticks(x)
-    ax2.set_xticklabels(["GPT2 (124M)", "GPT2 (355M)", "GPT2 (774M)"])
+    ax2.set_xticklabels(
+        ["GPT2 (124M)\nvs Human", 
+         "GPT2 (355M)\nvs Human", 
+         "GPT2 (774M)\nvs Human",]
+    )
     ax2.legend()
     ax2.grid(axis='y', linestyle='--', alpha=0.6)
     ax2.spines['top'].set_visible(False)
@@ -276,6 +282,7 @@ def plot_combined_correlations(corr_all_models_and_human, who):
 
     plt.tight_layout()
     plt.savefig(f"figs/error_correlation_combined_{who}_created.pdf")
+    plt.savefig(f"figs/error_correlation_combined_{who}_created.svg")
     plt.close()
 
 
