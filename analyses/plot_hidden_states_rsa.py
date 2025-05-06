@@ -339,7 +339,7 @@ def main():
                 ax.set_title(f"{model_family}")
                 ax.set_xlabel("Layer")
                 ax.set_ylabel(f"RSA Score ({rsa_metric})")
-                ax.set_ylim(0, 1)
+                ax.set_ylim(-1, 1)
                 ax.legend()
                 ax.spines['top'].set_visible(False)
                 ax.spines['right'].set_visible(False)
