@@ -179,121 +179,7 @@ def get_all_correlations(who, avg_acc_dict_human):
     return corr_all_models_and_human, llms_flat_names
 
 
-# def plot_model_model_and_model_human_correlation(corr_all_models_and_human, llms_flat_names, who):
-#     plt.rcParams.update({"font.size": 12, "font.weight": "normal"})
-#     avg_model_model_corr = np.nanmean(corr_all_models_and_human[:-1, :-1])
-#     std_model_model_corr = np.nanstd(corr_all_models_and_human[:-1, :-1])
-#     avg_model_human_corr = np.nanmean(corr_all_models_and_human[-1, :-1])
-#     std_model_human_corr = np.nanstd(corr_all_models_and_human[-1, :-1])
-
-#     print(f"Average model-model correlation: {avg_model_model_corr:.2f}")
-#     print(f"Std model-model correlation: {std_model_model_corr:.2f}")
-#     print(f"Average model-human correlation: {avg_model_human_corr:.2f}")
-#     print(f"Std model-human correlation: {std_model_human_corr:.2f}")
-#     print("-" * 50)
-
-#     # Plot barplots for model-model and model-human correlations
-#     fig, ax = plt.subplots(figsize=(3, 2))
-#     bar_width = 0.35
-#     ax.bar(
-#         np.arange(2),
-#         [avg_model_model_corr, avg_model_human_corr],
-#         bar_width,
-#         yerr=[std_model_model_corr, std_model_human_corr],
-#         capsize=5,
-#         color=["blue", "orange"],
-#         tick_label=['Model-Model', 'Model-Human']
-#     )
-#     ax.set_ylabel('Correlation')
-#     ax.set_ylim(0, 1)
-#     ax.spines['top'].set_visible(False)
-#     ax.spines['right'].set_visible(False)
-#     ax.grid(axis='y', linestyle='--', alpha=0.6)
-#     plt.tight_layout()
-#     plt.savefig(f"figs/error_correlation_mm_vs_mh_{who}_created.pdf")
-#     plt.close()
-
-
-# def plot_human_vs_model_correlation(corr_all_models_and_human, who):
-#     plt.rcParams.update({"font.size": 12, "font.weight": "normal"})
-
-#     # Compute average and std correlation for each model size and direction
-#     # corr_all_models_and_human[-1, :-1] is human vs models, and 
-#     # is organized as:
-#     # [small_fwd_seed1, small_fwd_seed2, small_fwd_seed3,
-#     #  small_bwd_seed1, small_bwd_seed2, small_bwd_seed3,
-#     #  medium_fwd_seed1, medium_fwd_seed2, medium_fwd_seed3,
-#     #  medium_bwd_seed1, medium_bwd_seed2, medium_bwd_seed3,
-#     #  large_fwd_seed1, large_fwd_seed2, large_fwd_seed3,
-#     #  large_bwd_seed1, large_bwd_seed2, large_bwd_seed3]
-#     avg_corrs = {}
-#     std_corrs = {}
-#     sizes = ["small", "medium", "large"]
-#     indices = [(0, 3), (3, 6), (6, 9), (9, 12), (12, 15), (15, 18)]
-
-#     # Collect for stats testing
-#     all_fwd_vs_human = []
-#     all_bwd_vs_human = []
-#     for size, (fwd_idx, bwd_idx) in zip(sizes, zip(indices[::2], indices[1::2])):
-#         print(f"\n{size} models")
-#         print("-" * 50)
-#         print(f"Forward models: {fwd_idx[0]}-{fwd_idx[1]}")
-#         print(f"Backward models: {bwd_idx[0]}-{bwd_idx[1]}")
-#         all_fwd_vs_human_entries = corr_all_models_and_human[-1, :-1][fwd_idx[0]:fwd_idx[1]]
-#         all_bwd_vs_human_entries = corr_all_models_and_human[-1, :-1][bwd_idx[0]:bwd_idx[1]]
-#         all_fwd_vs_human.extend(all_fwd_vs_human_entries)
-#         all_bwd_vs_human.extend(all_bwd_vs_human_entries)
-#         avg_corrs[f"{size}_fwd"] = np.mean(all_fwd_vs_human_entries)
-#         std_corrs[f"{size}_fwd"] = np.std(all_fwd_vs_human_entries)
-#         avg_corrs[f"{size}_bwd"] = np.mean(all_bwd_vs_human_entries)
-#         std_corrs[f"{size}_bwd"] = np.std(all_bwd_vs_human_entries)
-
-#     # Plot barplots for each model size and direction
-#     fig, ax = plt.subplots(figsize=(5, 3))
-#     bar_width = 0.35
-#     x = np.arange(len(sizes))
-#     ax.bar(
-#         x - bar_width/2, [avg_corrs[f"{size}_fwd"] for size in sizes], 
-#         bar_width,
-#         yerr=[std_corrs[f"{size}_fwd"] for size in sizes],
-#         capsize=5,
-#         label='Fwd', color='#E8B7D4'
-#     )
-#     ax.bar(
-#         x + bar_width/2, [avg_corrs[f"{size}_bwd"] for size in sizes], 
-#         bar_width, yerr=[std_corrs[f"{size}_bwd"] for size in sizes], 
-#         capsize=5,
-#         label='Bwd', color='#FF7B89'
-#     )
-#     ax.set_xticks(x)
-#     ax.set_xticklabels(["GPT2 (124M)", "GPT2 (355M)", "GPT2 (774M)"])
-#     ax.set_ylabel('Correlation')
-#     ax.legend()
-#     ax.grid(axis='y', linestyle='--', alpha=0.6)
-#     ax.spines['top'].set_visible(False)
-#     ax.spines['right'].set_visible(False)
-#     plt.tight_layout()
-#     plt.savefig(f"figs/error_correlation_human_vs_models_{who}_created.pdf")
-#     plt.close()
-
-#     # Stats testing comparing all fwd vs human and all bwd vs human
-#     t, p = stats.ttest_rel(all_fwd_vs_human, all_bwd_vs_human)
-#     print(f"Stats testing fwd-human vs bwd-human")
-#     print("-" * 50)
-#     print(f"t({len(all_fwd_vs_human)-1}) = {t:.3f}, p = {p:.3f}")
-
-#     # Average and std correlation for all fwd vs human and all bwd vs human
-#     avg_corr_fwd = np.mean(all_fwd_vs_human)
-#     std_corr_fwd = np.std(all_fwd_vs_human)
-#     avg_corr_bwd = np.mean(all_bwd_vs_human)
-#     std_corr_bwd = np.std(all_bwd_vs_human)
-#     print(f"\nAverage correlation fwd vs human: {avg_corr_fwd:.2f}")
-#     print(f"Std correlation fwd vs human: {std_corr_fwd:.2f}")
-#     print(f"Average correlation bwd vs human: {avg_corr_bwd:.2f}")
-#     print(f"Std correlation bwd vs human: {std_corr_bwd:.2f}")
-
-
-def plot_combined_correlations(corr_all_models_and_human, llms_flat_names, who):
+def plot_combined_correlations(corr_all_models_and_human, who):
     plt.rcParams.update({"font.size": 12, "font.weight": "normal"})
     
     # Calculations from plot_model_model_and_model_human_correlation
@@ -357,7 +243,7 @@ def plot_combined_correlations(corr_all_models_and_human, llms_flat_names, who):
         bar_width,
         yerr=[std_model_model_corr, std_model_human_corr],
         capsize=5,
-        color=["blue", "orange"],
+        color=["#33539E", "#7F1CD6"],
         tick_label=['Model-Model', 'Model-Human']
     )
     ax1.set_ylabel('Correlation')
@@ -426,15 +312,8 @@ def plot(who, avg_acc_dict_human):
     Human vs individual models and between models correlations, as heatmaps
     """
     corr_all_models_and_human, llms_flat_names = get_all_correlations(who, avg_acc_dict_human)
-
-    # # Plot all model-model and model-human correlations
-    # plot_model_model_and_model_human_correlation(corr_all_models_and_human, llms_flat_names, who)
-
-    # # Plot human vs models correlation
-    # plot_human_vs_model_correlation(corr_all_models_and_human, who)
-
     # Plot combined correlations
-    plot_combined_correlations(corr_all_models_and_human, llms_flat_names, who)
+    plot_combined_correlations(corr_all_models_and_human, who)
 
     # Plot all models and human correlation
     plot_all_models_and_human_correlation(corr_all_models_and_human, llms_flat_names, who)
