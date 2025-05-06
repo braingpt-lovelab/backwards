@@ -272,7 +272,10 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
     else:
         n_cols = 8
     n_rows = int(np.ceil(n_layers / n_cols))
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
+    fig, axes = plt.subplots(
+        n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2),
+        sharex=True, sharey=True,
+    )
     axes = axes.flatten()
 
     for layer_index in range(n_layers):
@@ -332,9 +335,13 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
         # Add grid
         ax.grid(True, linestyle='--', alpha=0.5)
     
-    fig.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 0.05))
-    fig.tight_layout()
-    fig.subplots_adjust(bottom=0.3)
+    if "small" in model_size:
+        fig.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 0.05))
+        fig.tight_layout()  
+        fig.subplots_adjust(bottom=0.3)
+    else:
+        fig.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 0.03))
+        fig.subplots_adjust(bottom=0.15, top=0.95, left=0.1, right=0.95, hspace=0.4, wspace=0.3)
     plt.savefig(f'figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.pdf')
     print(f"Saved attention weights norm ranks by distance plot to disk: figs/attn_weights_norm_ranks_by_distance_{model_size}_seed{random_seed}.pdf")
 
@@ -346,7 +353,10 @@ def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
     else:
         n_cols = 8
     n_rows = int(np.ceil(n_layers / n_cols))
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2))
+    fig, axes = plt.subplots(
+        n_rows, n_cols, figsize=(n_cols * 2, n_rows * 2),
+        sharex=True, sharey=True,
+    )
     axes = axes.flatten()
 
     for layer_index in range(n_layers):
@@ -401,9 +411,13 @@ def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
         # Add grid
         ax.grid(True, linestyle='--', alpha=0.5)
 
-    fig.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 0.05))
-    fig.tight_layout()
-    fig.subplots_adjust(bottom=0.3)
+    if "small" in model_size:
+        fig.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 0.05))
+        fig.tight_layout()  
+        fig.subplots_adjust(bottom=0.3)
+    else:
+        fig.legend(loc='lower center', ncol=4, bbox_to_anchor=(0.5, 0.03))
+        fig.subplots_adjust(bottom=0.15, top=0.95, left=0.1, right=0.95, hspace=0.4, wspace=0.3)
     plt.savefig(f'figs/attn_weights_entropy_per_row_{model_size}_seed{random_seed}.pdf')
     print(f"Saved attention weights entropy per row plot to disk: figs/attn_weights_entropy_per_row_{model_size}_seed{random_seed}.pdf")
 
