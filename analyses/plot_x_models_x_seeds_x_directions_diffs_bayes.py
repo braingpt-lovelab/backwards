@@ -116,10 +116,6 @@ def x_seeds_diffs(comparison, data_type="validation"):
                         f"model_results/{model2_name}/{type_of_abstract}/all_batches_ppl_{data_type}.npy"
                     )
 
-                    # # Load placeholder results
-                    # model1_ppls = np.random.rand(100)
-                    # model2_ppls = np.random.rand(100)
-
                     # Compute stats
                     t_stat, p_val, pearson_r, cohen_d = compute_stats(model1_ppls, model2_ppls)
                     per_direction_model_pairs_stats["t_stat"].append(t_stat)
@@ -172,10 +168,6 @@ def x_direction_diffs(comparison, data_type="validation"):
                 model2_ppls = np.load(
                     f"model_results/{model2_name}/{type_of_abstract}/all_batches_ppl_{data_type}.npy"
                 )
-
-                # # Load placeholder results
-                # model1_ppls = np.random.rand(100)
-                # model2_ppls = np.random.rand(100)
                 
                 # Compute stats
                 t_stat, p_val, pearson_r, cohen_d = compute_stats(model1_ppls, model2_ppls)
@@ -204,12 +196,11 @@ def x_direction_diffs(comparison, data_type="validation"):
         
 def main():
     x_seeds_diffs(comparisons["between_runs"], data_type="validation")
-    # x_direction_diffs(comparisons["between_directions"], data_type="validation")
+    x_direction_diffs(comparisons["between_directions"], data_type="validation")
 
 
 if __name__ == "__main__":
     results_dir = "model_results"
-    figs_dir = "figs"
     type_of_abstract = "human_abstracts"
 
     main()
