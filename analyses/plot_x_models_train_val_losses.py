@@ -121,8 +121,8 @@ def plot_train_val_losses():
     with open("results/x_models_train_val_losses.pkl", "rb") as f:
         all_data = pickle.load(f)
 
-    # Set up the figure: 4 rows (train, train diff, val, val diff), 3 columns (3 models)
-    fig, axes = plt.subplots(4, 3, figsize=(8, 8))
+    # Set up the figure: 2 rows (perplexity, difference), 6 columns (3 train, 3 val)
+    fig, axes = plt.subplots(2, 6, figsize=(12, 4))
     plt.subplots_adjust(hspace=0.3, wspace=0.2)
 
     # Define model sizes
@@ -152,13 +152,11 @@ def plot_train_val_losses():
         val_ppl_avg = {label: np.mean(data, axis=0) for label, data in val_ppl_data.items()}
         val_ppl_std = {label: np.std(data, axis=0) for label, data in val_ppl_data.items()}
 
-        # Plot training perplexity (row 1)
+        # Plot training perplexity (row 1, columns 1-3)
         ax_train = axes[0, size_idx]
         for model_idx, label in enumerate(model_labels):
             if train_ppl_avg[label].size > 0:
                 x = range(len(train_ppl_avg[label]))
-                # print(f"model_size: {model_size}, label: {label}, train_ppl_avg[label]: {train_ppl_avg[label].shape}")
-                # print(f"train_ppl_std[label]: {train_ppl_std[label]}")
                 ax_train.plot(x, train_ppl_avg[label], label=label, color=colors[model_idx], alpha=alpha, lw=lw)
                 ax_train.fill_between(x, train_ppl_avg[label] - train_ppl_std[label], 
                                     train_ppl_avg[label] + train_ppl_std[label], 
@@ -171,9 +169,27 @@ def plot_train_val_losses():
         ax_train.set_xlim(0, len(train_ppl_avg[label]) - 1)
         ax_train.set_xticks([])
         if size_idx == 0:
-            ax_train.set_ylabel("Train log(perplexity)")
+            ax_train.set_ylabel("Train\nlog(perplexity)")
 
-        # Plot training perplexity difference (Fwd - Bwd) (row 2)
+        # Plot validation perplexity (row 1, columns 4-6)
+        ax_val = axes[0, size_idx + 3]
+        for model_idx, label in enumerate(model_labels):
+            if val_ppl_avg[label].size > 0:
+                x = range(len(val_ppl_avg[label]))
+                ax_val.plot(x, val_ppl_avg[label], label=label, color=colors[model_idx], alpha=alpha, lw=lw)
+                ax_val.fill_between(x, val_ppl_avg[label] - val_ppl_std[label], 
+                                   val_ppl_avg[label] + val_ppl_std[label], 
+                                   color=colors[model_idx], alpha=0.2)
+        ax_val.set_title(f"{model_size}")
+        ax_val.set_yscale("log")
+        ax_val.spines['top'].set_visible(False)
+        ax_val.spines['right'].set_visible(False)
+        ax_val.set_xlim(0, len(val_ppl_avg[label]) - 1)
+        ax_val.set_xticks([])
+        if size_idx == 0:
+            ax_val.set_ylabel("Validation\nlog(perplexity)")
+
+        # Plot training perplexity difference (Fwd - Bwd) (row 2, columns 1-3)
         ax_train_diff = axes[1, size_idx]
         if train_ppl_avg["Fwd"].size > 0 and train_ppl_avg["Bwd"].size > 0:
             train_diff = np.log(train_ppl_avg["Fwd"]) - np.log(train_ppl_avg["Bwd"])
@@ -189,29 +205,12 @@ def plot_train_val_losses():
         ax_train_diff.plot([0, len(train_diff)], [0, 0], color='grey', lw=1, ls='--')
         ax_train_diff.set_xlim(0, len(train_diff) - 1)
         ax_train_diff.set_ylim([-0.1, 0.1])
-        ax_train_diff.set_xticks([])
+        ax_train_diff.set_xlabel("Logging Steps")
         if size_idx == 0:
             ax_train_diff.set_ylabel("Train Diff")
 
-        # Plot validation perplexity (row 3)
-        ax_val = axes[2, size_idx]
-        for model_idx, label in enumerate(model_labels):
-            if val_ppl_avg[label].size > 0:
-                x = range(len(val_ppl_avg[label]))
-                ax_val.plot(x, val_ppl_avg[label], label=label, color=colors[model_idx], alpha=alpha, lw=lw)
-                ax_val.fill_between(x, val_ppl_avg[label] - val_ppl_std[label], 
-                                   val_ppl_avg[label] + val_ppl_std[label], 
-                                   color=colors[model_idx], alpha=0.2)
-        ax_val.set_yscale("log")
-        ax_val.spines['top'].set_visible(False)
-        ax_val.spines['right'].set_visible(False)
-        ax_val.set_xlim(0, len(val_ppl_avg[label]) - 1)
-        ax_val.set_xticks([])
-        if size_idx == 0:
-            ax_val.set_ylabel("Validation log(perplexity)")
-
-        # Plot validation perplexity difference (Fwd - Bwd) (row 4)
-        ax_val_diff = axes[3, size_idx]
+        # Plot validation perplexity difference (Fwd - Bwd) (row 2, columns 4-6)
+        ax_val_diff = axes[1, size_idx + 3]
         if val_ppl_avg["Fwd"].size > 0 and val_ppl_avg["Bwd"].size > 0:
             val_diff = np.log(val_ppl_avg["Fwd"]) - np.log(val_ppl_avg["Bwd"])
             val_diff_std = np.sqrt(val_ppl_std["Fwd"]**2 / val_ppl_avg["Fwd"]**2 + 
@@ -228,16 +227,13 @@ def plot_train_val_losses():
         ax_val_diff.plot([0, len(val_diff)], [0, 0], color='grey', lw=1, ls='--')
         ax_val_diff.set_xlim(0, len(val_diff) - 1)
         ax_val_diff.set_ylim([-0.1, 0.1])
-        ax_val_diff.set_xticks([])
         if size_idx == 0:
             ax_val_diff.set_ylabel("Validation Diff")
         
-    axes[0, -1].legend()
-    axes[2, -1].legend()
+    axes[0, 5].legend()
     plt.tight_layout()
     plt.savefig("figs/train_val_losses_comparison.pdf")
     plt.close()
-
 
 def main():
     # Get the wandb data
