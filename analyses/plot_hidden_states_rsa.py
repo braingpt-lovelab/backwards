@@ -139,6 +139,7 @@ def reorder_hidden_states(hidden_states1, hidden_states2, model1_name, model2_na
             seed = 1
 
         # Reorder along seq_len dim (rows)
+        seq_len = hidden_states1.shape[1]
         remapping_indices = remap_permuted_indices(seq_len, seed)
         reordered_matrix2[:, :, :] = reordered_matrix2[:, :, :][:, remapping_indices, :]
     
@@ -158,6 +159,7 @@ def reorder_hidden_states(hidden_states1, hidden_states2, model1_name, model2_na
             seed = 1
 
         # Reorder along seq_len dim (rows)
+        seq_len = hidden_states1.shape[1]
         remapping_indices = remap_permuted_indices(seq_len, seed)
         reordered_matrix2[:, :, :] = reordered_matrix2[:, :, :][:, remapping_indices, :]
     
@@ -166,7 +168,48 @@ def reorder_hidden_states(hidden_states1, hidden_states2, model1_name, model2_na
     return reordered_matrix1, reordered_matrix2
 
 
-def rsa(model1_RDM, model2_RDM, rsa_metric="cosine"):
+def rdm(model_hidden_states_per_batch, rdm_metric="cosine"):
+    """
+    Compute the RDM for each model's hidden states from a batch.
+
+    Args:
+        model_hidden_states_per_batch (torch.Tensor): Hidden states of a model, shape (bsz, seq_len, hidden_size)
+        rdm_metric (str): Metric to use for RDM. Default is "cosine".
+    
+    Notes: parallel processing for all bsz
+
+    Returns:
+        model_RDM_per_batch (torch.Tensor): RDM of the model, shape (bsz, seq_len, seq_len)
+    """
+    dot_product = torch.einsum(
+        "bld,bds->bls",
+        model_hidden_states_per_batch, 
+        model_hidden_states_per_batch.transpose(1, 2)
+    )
+
+    if rdm_metric == "cosine":
+        # Compute norms: sqrt of diagonal elements
+        # Shape: (bsz, seq_len)
+        norms = torch.sqrt(torch.diagonal(dot_product, dim1=1, dim2=2).clamp(min=0))
+
+        # Compute cosine similarity: (x_i . x_j) / (||x_i|| ||x_j||)
+        # Shape: (bsz, seq_len, seq_len)
+        norms_product = norms.unsqueeze(2) * norms.unsqueeze(1) 
+        # Avoid division by zero 
+        cosine_sim = dot_product / norms_product.clamp(min=1e-8)
+
+        # Compute cosine distance
+        cosine_dist = 1 - cosine_sim  # Shape: (bsz, seq_len, seq_len)
+
+        model_RDM_per_batch = cosine_dist
+    
+    else:
+        raise ValueError("Invalid RDM metric. Only 'cosine' is supported.")
+
+    return model_RDM_per_batch
+
+
+def rsa(model1_RDM, model2_RDM, rsa_metric="spearman"):
     """
     Compute the RSA between two RDMs from a batch, using RDMs'
     lower triangular matrices including the diagonal.
@@ -174,7 +217,7 @@ def rsa(model1_RDM, model2_RDM, rsa_metric="cosine"):
     Args:
         model1_RDM (torch.Tensor): RDM of model 1, shape (bsz, seq_len, seq_len)
         model2_RDM (torch.Tensor): RDM of model 2, shape (bsz, seq_len, seq_len)
-        rsa_metric (str): Metric to use for RSA. Default is "cosine".
+        rsa_metric (str): Metric to use for RSA. Default is "spearman".
     
     Notes: parallel processing for all bsz
 
@@ -274,18 +317,14 @@ def main():
                                 )
                                 
                                 # Compute RDM
-                                # For each model, 
-                                # compute (bsz, seq_len, hidden_size) @ (bsz, hidden_size, seq_len)
-                                # and get shape: (bsz, seq_len, seq_len)
-                                model1_RDM_per_batch = torch.einsum(
-                                    "bld,bds->bls",
+                                # shape: (bsz, seq_len, seq_len)
+                                model1_RDM_per_batch = rdm(
                                     model1_hidden_states_per_batch, 
-                                    model1_hidden_states_per_batch.transpose(1, 2)
+                                    rdm_metric=rdm_metric
                                 )
-                                model2_RDM_per_batch = torch.einsum(
-                                    "bld,bds->bls", 
+                                model2_RDM_per_batch = rdm(
                                     model2_hidden_states_per_batch, 
-                                    model2_hidden_states_per_batch.transpose(1, 2)
+                                    rdm_metric=rdm_metric
                                 )
 
                                 # RSA
@@ -348,19 +387,26 @@ def main():
         
             # Save the figure for this seed
             plt.tight_layout()
-            plt.savefig(f"figs/rsa_results_{rsa_metric}_{seed}.pdf")
+            plt.savefig(f"figs/rsa_results_{rdm_metric}_{rsa_metric}_{seed}.pdf")
 
 
 if __name__ == "__main__":
+    import time
     parser = argparse.ArgumentParser()
     parser.add_argument("--random_seed", type=int, default=1, help="Random seed for text sampling")
-    parser.add_argument("--rsa_metric", type=str, default="cosine", help="Metric to use for RSA")
+    parser.add_argument("--rdm_metric", type=str, default="cosine", help="Metric to use for RDM")
+    parser.add_argument("--rsa_metric", type=str, default="spearman", help="Metric to use for RSA")
     args = parser.parse_args()
     random_seed = args.random_seed
+    rdm_metric = args.rdm_metric
     rsa_metric = args.rsa_metric
 
     batch_size = 4
     max_num_batches = 16
-    seq_len = 1024
+
+    start_time = time.time()
     main()
+    end_time = time.time()
+    duration = end_time - start_time
+    print(f"Total time taken: {duration/60:.2f} minutes")
 
