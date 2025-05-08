@@ -4,8 +4,9 @@ import wandb
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 
-plt.rcParams.update({'font.size': 12, 'font.weight': 'normal'})
+plt.rcParams.update({'font.size': 14, 'font.weight': 'normal'})
 
 # Between all models for train and val loss
 comparison = {
@@ -121,17 +122,25 @@ def plot_train_val_losses():
     with open("results/x_models_train_val_losses.pkl", "rb") as f:
         all_data = pickle.load(f)
 
-    # Set up the figure: 2 rows (perplexity, difference), 6 columns (3 train, 3 val)
-    fig, axes = plt.subplots(2, 6, figsize=(12, 4))
-    plt.subplots_adjust(hspace=0.3, wspace=0.2)
+    # Set up the figure with GridSpec for custom column spacing
+    fig = plt.figure(figsize=(14, 4))
+    gs = gridspec.GridSpec(2, 7, width_ratios=[1, 1, 1, 0.1, 1, 1, 1], wspace=0.5)
+    axes = [[], []]
+    for row in range(2):
+        for col in range(6):
+            if col < 3:
+                axes[row].append(plt.subplot(gs[row, col]))
+            else:
+                axes[row].append(plt.subplot(gs[row, col + 1]))  # Skip the gap column
+    axes = np.array(axes)
 
     # Define model sizes
     model_sizes = ["GPT-2 (124M)", "GPT-2 (355M)", "GPT-2 (774M)"]
     seeds = ["seed1", "seed2", "seed3"]
     model_labels = ["Fwd", "Bwd", "Perm"]
     colors = ['#E8B7D4', '#FF7B89', '#5874DC']  # Colors for fwd, rev, perm
-    alpha = 0.6
-    lw = plt.rcParams['lines.linewidth'] ** 0.5
+    alpha = 1
+    lw = plt.rcParams['lines.linewidth'] ** 0.8
 
     # Iterate over model sizes to populate the subplots
     for size_idx, model_size in enumerate(model_sizes):
@@ -196,9 +205,9 @@ def plot_train_val_losses():
             train_diff_std = np.sqrt(train_ppl_std["Fwd"]**2 / train_ppl_avg["Fwd"]**2 + 
                                     train_ppl_std["Bwd"]**2 / train_ppl_avg["Bwd"]**2)
             x = range(len(train_diff))
-            ax_train_diff.plot(x, train_diff, color='#2D4030', alpha=alpha, lw=lw)
+            ax_train_diff.plot(x, train_diff, color='#57D0DB', alpha=alpha, lw=lw)
             ax_train_diff.fill_between(x, train_diff - train_diff_std, train_diff + train_diff_std, 
-                                     color='#2D4030', alpha=0.2)
+                                     color='#57D0DB', alpha=0.2)
         ax_train_diff.set_title(f"Fwd - Bwd")
         ax_train_diff.spines['top'].set_visible(False)
         ax_train_diff.spines['right'].set_visible(False)
@@ -206,8 +215,9 @@ def plot_train_val_losses():
         ax_train_diff.set_xlim(0, len(train_diff) - 1)
         ax_train_diff.set_ylim([-0.1, 0.1])
         ax_train_diff.set_xlabel("Logging Steps")
+        ax_train_diff.set_xticks([])
         if size_idx == 0:
-            ax_train_diff.set_ylabel("Train Diff")
+            ax_train_diff.set_ylabel("Train\nDifference")
 
         # Plot validation perplexity difference (Fwd - Bwd) (row 2, columns 4-6)
         ax_val_diff = axes[1, size_idx + 3]
@@ -216,22 +226,23 @@ def plot_train_val_losses():
             val_diff_std = np.sqrt(val_ppl_std["Fwd"]**2 / val_ppl_avg["Fwd"]**2 + 
                                   val_ppl_std["Bwd"]**2 / val_ppl_avg["Bwd"]**2)
             x = range(len(val_diff))
-            ax_val_diff.plot(x, val_diff, color='#2D4030', alpha=alpha, lw=lw)
+            ax_val_diff.plot(x, val_diff, color='#57D0DB', alpha=alpha, lw=lw)
             ax_val_diff.fill_between(x, val_diff - val_diff_std, val_diff + val_diff_std, 
-                                    color='#2D4030', alpha=0.2)
+                                    color='#57D0DB', alpha=0.2)
             
         ax_val_diff.set_title(f"Fwd - Bwd")
         ax_val_diff.set_xlabel("Logging Steps")
+        ax_val_diff.set_xticks([])
         ax_val_diff.spines['top'].set_visible(False)
         ax_val_diff.spines['right'].set_visible(False)
         ax_val_diff.plot([0, len(val_diff)], [0, 0], color='grey', lw=1, ls='--')
         ax_val_diff.set_xlim(0, len(val_diff) - 1)
         ax_val_diff.set_ylim([-0.1, 0.1])
         if size_idx == 0:
-            ax_val_diff.set_ylabel("Validation Diff")
+            ax_val_diff.set_ylabel("Validation\nDifference")
         
     axes[0, 5].legend()
-    plt.tight_layout()
+    plt.subplots_adjust(left=0.08, right=0.99, top=0.9, bottom=0.10)
     plt.savefig("figs/train_val_losses_comparison.pdf")
     plt.close()
 
