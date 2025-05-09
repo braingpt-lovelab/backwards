@@ -140,7 +140,7 @@ def plot_train_val_losses():
     model_labels = ["Fwd", "Bwd", "Perm"]
     colors = ['#E8B7D4', '#FF7B89', '#5874DC']  # Colors for fwd, rev, perm
     alpha = 1
-    lw = plt.rcParams['lines.linewidth'] ** 0.8
+    lw = plt.rcParams['lines.linewidth'] ** 2
 
     # Iterate over model sizes to populate the subplots
     for size_idx, model_size in enumerate(model_sizes):
@@ -178,7 +178,7 @@ def plot_train_val_losses():
         ax_train.set_xlim(0, len(train_ppl_avg[label]) - 1)
         ax_train.set_xticks([])
         if size_idx == 0:
-            ax_train.set_ylabel("Train\nlog(perplexity)")
+            ax_train.set_ylabel("Train\nln(perplexity)")
 
         # Plot validation perplexity (row 1, columns 4-6)
         ax_val = axes[0, size_idx + 3]
@@ -196,7 +196,7 @@ def plot_train_val_losses():
         ax_val.set_xlim(0, len(val_ppl_avg[label]) - 1)
         ax_val.set_xticks([])
         if size_idx == 0:
-            ax_val.set_ylabel("Validation\nlog(perplexity)")
+            ax_val.set_ylabel("Validation\nln(perplexity)")
 
         # Plot training perplexity difference (Fwd - Bwd) (row 2, columns 1-3)
         ax_train_diff = axes[1, size_idx]
