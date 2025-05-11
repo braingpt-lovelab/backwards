@@ -122,129 +122,109 @@ def plot_train_val_losses():
     with open("results/x_models_train_val_losses.pkl", "rb") as f:
         all_data = pickle.load(f)
 
-    # Set up the figure with GridSpec for custom column spacing
-    fig = plt.figure(figsize=(14, 4))
-    gs = gridspec.GridSpec(2, 7, width_ratios=[1, 1, 1, 0.1, 1, 1, 1], wspace=0.5)
-    axes = [[], []]
-    for row in range(2):
-        for col in range(6):
-            if col < 3:
-                axes[row].append(plt.subplot(gs[row, col]))
-            else:
-                axes[row].append(plt.subplot(gs[row, col + 1]))  # Skip the gap column
-    axes = np.array(axes)
-
-    # Define model sizes
+    # Define model sizes and other parameters
     model_sizes = ["GPT-2 (124M)", "GPT-2 (355M)", "GPT-2 (774M)"]
     seeds = ["seed1", "seed2", "seed3"]
     model_labels = ["Fwd", "Bwd", "Perm"]
-    colors = ['#E8B7D4', '#FF7B89', '#5874DC']  # Colors for fwd, rev, perm
+    colors = ['#E8B7D4', '#FF7B89', '#5874DC']  # Colors for Fwd, Bwd, Perm
     alpha = 1
     lw = plt.rcParams['lines.linewidth'] ** 2
 
-    # Iterate over model sizes to populate the subplots
-    for size_idx, model_size in enumerate(model_sizes):
-        # Collect data across seeds for averaging
-        train_ppl_data = {label: [] for label in model_labels}
-        val_ppl_data = {label: [] for label in model_labels}
+    # Function to create a figure for either train or validation
+    def create_figure(data_type, filename):
+        fig = plt.figure(figsize=(8, 6))
+        gs = gridspec.GridSpec(3, 3, wspace=0.35, hspace=0.15)
+        axes = np.array([[plt.subplot(gs[row, col]) for col in range(3)] for row in range(3)])
 
-        for seed in seeds:
-            model_names = comparison[model_size][seed]
-            for model_idx, model_name in enumerate(model_names):
-                if model_name in all_data:
-                    train_ppl_data[model_labels[model_idx]].append(all_data[model_name]["training_ppl"])
-                    val_ppl_data[model_labels[model_idx]].append(all_data[model_name]["validation_ppl"])
+        for size_idx, model_size in enumerate(model_sizes):
+            # Collect data across seeds for averaging
+            ppl_data = {label: [] for label in model_labels}
+            for seed in seeds:
+                model_names = comparison[model_size][seed]
+                for model_idx, model_name in enumerate(model_names):
+                    if model_name in all_data:
+                        ppl_data[model_labels[model_idx]].append(
+                            all_data[model_name][f"{data_type}_ppl"]
+                        )
 
-        # Calculate averages and standard deviations
-        train_ppl_avg = {label: np.mean(data, axis=0) for label, data in train_ppl_data.items()}
-        train_ppl_std = {label: np.std(data, axis=0) for label, data in train_ppl_data.items()}
-        val_ppl_avg = {label: np.mean(data, axis=0) for label, data in val_ppl_data.items()}
-        val_ppl_std = {label: np.std(data, axis=0) for label, data in val_ppl_data.items()}
+            # Calculate averages and standard deviations
+            ppl_avg = {label: np.mean(data, axis=0) for label, data in ppl_data.items()}
+            ppl_std = {label: np.std(data, axis=0) for label, data in ppl_data.items()}
 
-        # Plot training perplexity (row 1, columns 1-3)
-        ax_train = axes[0, size_idx]
-        for model_idx, label in enumerate(model_labels):
-            if train_ppl_avg[label].size > 0:
-                x = range(len(train_ppl_avg[label]))
-                ax_train.plot(x, train_ppl_avg[label], label=label, color=colors[model_idx], alpha=alpha, lw=lw)
-                ax_train.fill_between(x, train_ppl_avg[label] - train_ppl_std[label], 
-                                    train_ppl_avg[label] + train_ppl_std[label], 
-                                    color=colors[model_idx], alpha=0.2)
-                
-        ax_train.set_title(f"{model_size}")
-        ax_train.set_yscale("log")
-        ax_train.spines['top'].set_visible(False)
-        ax_train.spines['right'].set_visible(False)
-        ax_train.set_xlim(0, len(train_ppl_avg[label]) - 1)
-        ax_train.set_xticks([])
-        if size_idx == 0:
-            ax_train.set_ylabel("Train\nln(perplexity)")
+            # Plot Fwd vs Perm (row 1)
+            ax_fwd_perm = axes[0, size_idx]
+            for label, color in zip(["Fwd", "Perm"], [colors[0], colors[2]]):
+                if ppl_avg[label].size > 0:
+                    x = range(len(ppl_avg[label]))
+                    ax_fwd_perm.plot(x, ppl_avg[label], label=label, color=color, alpha=alpha, lw=lw)
+                    ax_fwd_perm.fill_between(
+                        x, ppl_avg[label] - ppl_std[label], ppl_avg[label] + ppl_std[label],
+                        color=color, alpha=0.2
+                    )
+            ax_fwd_perm.set_title(f"{model_size}")
+            ax_fwd_perm.set_yscale("log")
+            ax_fwd_perm.spines['top'].set_visible(False)
+            ax_fwd_perm.spines['right'].set_visible(False)
+            ax_fwd_perm.set_xlim(0, len(ppl_avg["Fwd"]) - 1)
+            ax_fwd_perm.set_xticks([])
+            ax_fwd_perm.set_ylim([10, 1e4])
+            if size_idx == 0:
+                ax_fwd_perm.set_ylabel("Fwd vs Perm\nln(perplexity)")
 
-        # Plot validation perplexity (row 1, columns 4-6)
-        ax_val = axes[0, size_idx + 3]
-        for model_idx, label in enumerate(model_labels):
-            if val_ppl_avg[label].size > 0:
-                x = range(len(val_ppl_avg[label]))
-                ax_val.plot(x, val_ppl_avg[label], label=label, color=colors[model_idx], alpha=alpha, lw=lw)
-                ax_val.fill_between(x, val_ppl_avg[label] - val_ppl_std[label], 
-                                   val_ppl_avg[label] + val_ppl_std[label], 
-                                   color=colors[model_idx], alpha=0.2)
-        ax_val.set_title(f"{model_size}")
-        ax_val.set_yscale("log")
-        ax_val.spines['top'].set_visible(False)
-        ax_val.spines['right'].set_visible(False)
-        ax_val.set_xlim(0, len(val_ppl_avg[label]) - 1)
-        ax_val.set_xticks([])
-        if size_idx == 0:
-            ax_val.set_ylabel("Validation\nln(perplexity)")
+            # Plot Bwd vs Perm (row 2)
+            ax_bwd_perm = axes[1, size_idx]
+            for label, color in zip(["Bwd", "Perm"], [colors[1], colors[2]]):
+                if ppl_avg[label].size > 0:
+                    x = range(len(ppl_avg[label]))
+                    ax_bwd_perm.plot(x, ppl_avg[label], label=label, color=color, alpha=alpha, lw=lw)
+                    ax_bwd_perm.fill_between(
+                        x, ppl_avg[label] - ppl_std[label], ppl_avg[label] + ppl_std[label],
+                        color=color, alpha=0.2
+                    )
+            ax_bwd_perm.set_yscale("log")
+            ax_bwd_perm.spines['top'].set_visible(False)
+            ax_bwd_perm.spines['right'].set_visible(False)
+            ax_bwd_perm.set_xlim(0, len(ppl_avg["Bwd"]) - 1)
+            ax_bwd_perm.set_xticks([])
+            ax_bwd_perm.set_ylim([10, 1e4])
+            if size_idx == 0:
+                ax_bwd_perm.set_ylabel("Bwd vs Perm\nln(perplexity)")
 
-        # Plot training perplexity difference (Fwd - Bwd) (row 2, columns 1-3)
-        ax_train_diff = axes[1, size_idx]
-        if train_ppl_avg["Fwd"].size > 0 and train_ppl_avg["Bwd"].size > 0:
-            train_diff = np.log(train_ppl_avg["Fwd"]) - np.log(train_ppl_avg["Bwd"])
-            train_diff_std = np.sqrt(train_ppl_std["Fwd"]**2 / train_ppl_avg["Fwd"]**2 + 
-                                    train_ppl_std["Bwd"]**2 / train_ppl_avg["Bwd"]**2)
-            x = range(len(train_diff))
-            ax_train_diff.plot(x, train_diff, color='#57D0DB', alpha=alpha, lw=lw)
-            ax_train_diff.fill_between(x, train_diff - train_diff_std, train_diff + train_diff_std, 
-                                     color='#57D0DB', alpha=0.2)
-        ax_train_diff.set_title(f"Fwd - Bwd")
-        ax_train_diff.spines['top'].set_visible(False)
-        ax_train_diff.spines['right'].set_visible(False)
-        ax_train_diff.plot([0, len(train_diff)], [0, 0], color='grey', lw=1, ls='--')
-        ax_train_diff.set_xlim(0, len(train_diff) - 1)
-        ax_train_diff.set_ylim([-0.1, 0.1])
-        ax_train_diff.set_xlabel("Logging Steps")
-        ax_train_diff.set_xticks([])
-        if size_idx == 0:
-            ax_train_diff.set_ylabel("Train\nDifference")
+            # Plot Fwd - Bwd difference (row 3)
+            ax_diff = axes[2, size_idx]
+            if ppl_avg["Fwd"].size > 0 and ppl_avg["Bwd"].size > 0:
+                diff = np.log(ppl_avg["Fwd"]) - np.log(ppl_avg["Bwd"])
+                diff_std = np.sqrt(
+                    ppl_std["Fwd"]**2 / ppl_avg["Fwd"]**2 + ppl_std["Bwd"]**2 / ppl_avg["Bwd"]**2
+                )
+                x = range(len(diff))
+                ax_diff.plot(x, diff, color='#57D0DB', alpha=alpha, lw=lw, label="Fwd - Bwd")
+                ax_diff.fill_between(
+                    x, diff - diff_std, diff + diff_std, color='#57D0DB', alpha=0.2
+                )
+            ax_diff.spines['top'].set_visible(False)
+            ax_diff.spines['right'].set_visible(False)
+            ax_diff.plot([0, len(diff)], [0, 0], color='grey', lw=1, ls='--')
+            ax_diff.set_xlim(0, len(diff) - 1)
+            ax_diff.set_ylim([-0.1, 0.1])
+            ax_diff.set_xlabel("Logging Steps")
+            ax_diff.set_xticks([])
+            if size_idx == 0:
+                ax_diff.set_ylabel("Fwd - Bwd\nDifference")
 
-        # Plot validation perplexity difference (Fwd - Bwd) (row 2, columns 4-6)
-        ax_val_diff = axes[1, size_idx + 3]
-        if val_ppl_avg["Fwd"].size > 0 and val_ppl_avg["Bwd"].size > 0:
-            val_diff = np.log(val_ppl_avg["Fwd"]) - np.log(val_ppl_avg["Bwd"])
-            val_diff_std = np.sqrt(val_ppl_std["Fwd"]**2 / val_ppl_avg["Fwd"]**2 + 
-                                  val_ppl_std["Bwd"]**2 / val_ppl_avg["Bwd"]**2)
-            x = range(len(val_diff))
-            ax_val_diff.plot(x, val_diff, color='#57D0DB', alpha=alpha, lw=lw)
-            ax_val_diff.fill_between(x, val_diff - val_diff_std, val_diff + val_diff_std, 
-                                    color='#57D0DB', alpha=0.2)
-            
-        ax_val_diff.set_title(f"Fwd - Bwd")
-        ax_val_diff.set_xlabel("Logging Steps")
-        ax_val_diff.set_xticks([])
-        ax_val_diff.spines['top'].set_visible(False)
-        ax_val_diff.spines['right'].set_visible(False)
-        ax_val_diff.plot([0, len(val_diff)], [0, 0], color='grey', lw=1, ls='--')
-        ax_val_diff.set_xlim(0, len(val_diff) - 1)
-        ax_val_diff.set_ylim([-0.1, 0.1])
-        if size_idx == 0:
-            ax_val_diff.set_ylabel("Validation\nDifference")
-        
-    axes[0, 5].legend()
-    plt.subplots_adjust(left=0.08, right=0.99, top=0.9, bottom=0.10)
-    plt.savefig("figs/train_val_losses_comparison.pdf")
-    plt.close()
+        # Add legend to the top-right subplot
+        axes[0, 2].legend()
+        axes[1, 2].legend()
+        axes[2, 2].legend()
+        plt.subplots_adjust(left=0.15, right=0.99, top=0.92, bottom=0.08)
+        plt.savefig(f"figs/{filename}")
+        plt.close()
+
+    # Create training figure
+    create_figure("training", "train_losses_comparison.pdf")
+
+    # Create validation figure
+    create_figure("validation", "val_losses_comparison.pdf")
 
 def main():
     # Get the wandb data
