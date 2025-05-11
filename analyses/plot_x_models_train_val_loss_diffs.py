@@ -225,7 +225,7 @@ def plot_train_val_losses():
                         x, diff_bwd_perm - diff_bwd_perm_std, diff_bwd_perm + diff_bwd_perm_std,
                         color=colors[2], alpha=0.2
                     )
-
+                    
             ax.set_title(f"{model_size}")
             ax.spines['top'].set_visible(False)
             ax.spines['right'].set_visible(False)
@@ -234,6 +234,7 @@ def plot_train_val_losses():
             ax.set_ylim([-1e4, 10])
             ax.set_xlabel("Logging Steps")
             ax.set_xticks([])
+            ax.tick_params(axis='y', labelsize=10)
             ax.grid(True, linestyle='--', alpha=0.5)
             if size_idx == 0:
                 ax.set_ylabel("Perplexity Difference")
