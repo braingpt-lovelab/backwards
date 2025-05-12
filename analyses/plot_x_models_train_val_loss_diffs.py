@@ -236,6 +236,7 @@ def plot_train_val_losses():
             ax.set_xticks([])
             ax.tick_params(axis='y', labelsize=10)
             ax.grid(True, linestyle='--', alpha=0.5)
+            ax.plot([0, len(ppl_avg["Fwd"]) - 1], [0, 0], color='grey', lw=2, linestyle='--')
             if size_idx == 0:
                 ax.set_ylabel("Perplexity Difference")
             if size_idx != 0:
