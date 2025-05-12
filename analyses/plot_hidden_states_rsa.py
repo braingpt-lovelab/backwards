@@ -3,6 +3,7 @@ import torch
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
 import numpy as np
+import os
 import transformers
 import scipy.stats as stats
 
@@ -261,11 +262,18 @@ def rsa(model1_RDM, model2_RDM, rsa_metric="spearman"):
 
 def main():
     plt.rcParams.update({'font.size': 12, 'font.weight': 'normal'})
+    lw = plt.rcParams['lines.linewidth'] ** 2
+    
+    # Directory to save/load RSA results
+    os.makedirs("results", exist_ok=True)
+    
     with torch.no_grad():
         for seed in comparison.keys():
             # Fig is created at seed level.
             # Each column is a model family, each subplot contains all model comparisons
-            fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
+            fig, axes = plt.subplots(1, 3, figsize=(8, 3), sharey=True)
+            legend_handles = []
+            legend_labels = []
             axes = axes.flatten()
             ax_idx = 0
             for model_family in comparison[seed].keys():
@@ -292,81 +300,111 @@ def main():
                         seq_len = gpt_config.n_positions
                         print(f"num_layers: {num_layers}, hidden_size: {hidden_size}, seq_len: {seq_len}")
 
-                        # Per subplot for each model family
-                        # across all layers
-                        rsa_scores_x_layers_rsa_mean = []
-                        rsa_scores_x_layers_rsa_std = []
-                        for layer_idx in range(num_layers):
-                            rsa_scores_per_layer_x_batches = torch.empty((max_num_batches, batch_size))
-                            for batch_idx in range(max_num_batches):
-                                # shape: (bsz, seq_len, hidden_size)
-                                model1_hidden_states_per_batch = torch.load(
-                                    f"{model1_attn_dir}/hidden_states_layer{layer_idx}_batch{batch_idx}_seed{random_seed}.pt",
-                                )
-                                model2_hidden_states_per_batch = torch.load(
-                                    f"{model2_attn_dir}/hidden_states_layer{layer_idx}_batch{batch_idx}_seed{random_seed}.pt",
-                                )
+                        # Define file path for saving/loading RSA scores
+                        rsa_result_file = (
+                            f"results/rsa_{model1_name}_vs_{model2_name}_"
+                            f"{rdm_metric}_{rsa_metric}_seed{seed}.pt"
+                        )
+                        
+                        # Check if RSA results already exist
+                        if os.path.exists(rsa_result_file):
+                            print(f"Loading existing RSA results from {rsa_result_file}")
+                            rsa_data = torch.load(rsa_result_file)
+                            rsa_scores_x_layers_rsa_mean = rsa_data['mean']
+                            rsa_scores_x_layers_rsa_std = rsa_data['std']
+                        else:
+                            # Compute RSA scores
+                            rsa_scores_x_layers_rsa_mean = []
+                            rsa_scores_x_layers_rsa_std = []
+                            for layer_idx in range(num_layers):
+                                rsa_scores_per_layer_x_batches = torch.empty((max_num_batches, batch_size))
+                                for batch_idx in range(max_num_batches):
+                                    # shape: (bsz, seq_len, hidden_size)
+                                    model1_hidden_states_per_batch = torch.load(
+                                        f"{model1_attn_dir}/hidden_states_layer{layer_idx}_batch{batch_idx}_seed{random_seed}.pt",
+                                    )
+                                    model2_hidden_states_per_batch = torch.load(
+                                        f"{model2_attn_dir}/hidden_states_layer{layer_idx}_batch{batch_idx}_seed{random_seed}.pt",
+                                    )
 
-                                # Reorder rows of hidden states to be fwd order.
-                                model1_hidden_states_per_batch, model2_hidden_states_per_batch \
-                                    = reorder_hidden_states(
-                                        model1_hidden_states_per_batch,
-                                        model2_hidden_states_per_batch,
-                                        model1_name,
-                                        model2_name
-                                )
+                                    # Reorder rows of hidden states to be fwd order.
+                                    model1_hidden_states_per_batch, model2_hidden_states_per_batch \
+                                        = reorder_hidden_states(
+                                            model1_hidden_states_per_batch,
+                                            model2_hidden_states_per_batch,
+                                            model1_name,
+                                            model2_name
+                                    )
+                                    
+                                    # Compute RDM
+                                    # shape: (bsz, seq_len, seq_len)
+                                    model1_RDM_per_batch = rdm(
+                                        model1_hidden_states_per_batch, 
+                                        rdm_metric=rdm_metric
+                                    )
+                                    model2_RDM_per_batch = rdm(
+                                        model2_hidden_states_per_batch, 
+                                        rdm_metric=rdm_metric
+                                    )
+
+                                    # RSA
+                                    # shape: (bsz,)
+                                    rsa_scores_per_batch = rsa(
+                                        model1_RDM_per_batch, 
+                                        model2_RDM_per_batch,
+                                        rsa_metric=rsa_metric
+                                    )
+
+                                    # collect for this batch
+                                    rsa_scores_per_layer_x_batches[batch_idx] = rsa_scores_per_batch
                                 
-                                # Compute RDM
-                                # shape: (bsz, seq_len, seq_len)
-                                model1_RDM_per_batch = rdm(
-                                    model1_hidden_states_per_batch, 
-                                    rdm_metric=rdm_metric
+                                # Compute mean and std for this layer (
+                                # i.e., reducing over both dims: max_num_batches and batch_size
+                                # )
+                                rsa_scores_x_layers_rsa_mean.append(rsa_scores_per_layer_x_batches.mean().item())
+                                rsa_scores_x_layers_rsa_std.append(rsa_scores_per_layer_x_batches.std().item())
+                                print(
+                                    f"Layer {layer_idx}: mean = {rsa_scores_x_layers_rsa_mean[-1]}, "
+                                    f"std = {rsa_scores_x_layers_rsa_std[-1]}"
                                 )
-                                model2_RDM_per_batch = rdm(
-                                    model2_hidden_states_per_batch, 
-                                    rdm_metric=rdm_metric
-                                )
-
-                                # RSA
-                                # shape: (bsz,)
-                                rsa_scores_per_batch = rsa(
-                                    model1_RDM_per_batch, 
-                                    model2_RDM_per_batch,
-                                    rsa_metric=rsa_metric
-                                )
-
-                                # collect for this batch
-                                rsa_scores_per_layer_x_batches[batch_idx] = rsa_scores_per_batch
                             
-                            # Compute mean and std for this layer (
-                            # i.e., reducing over both dims: max_num_batches and batch_size
-                            # )
-                            rsa_scores_x_layers_rsa_mean.append(rsa_scores_per_layer_x_batches.mean().item())
-                            rsa_scores_x_layers_rsa_std.append(rsa_scores_per_layer_x_batches.std().item())
-                            print(
-                                f"Layer {layer_idx}: mean = {rsa_scores_x_layers_rsa_mean[-1]}, "
-                                f"std = {rsa_scores_x_layers_rsa_std[-1]}"
+                            # Save RSA results
+                            torch.save(
+                                {
+                                    'mean': rsa_scores_x_layers_rsa_mean,
+                                    'std': rsa_scores_x_layers_rsa_std
+                                },
+                                rsa_result_file
                             )
+                            print(f"Saved RSA results to {rsa_result_file}")
 
                         # Plot for all layers at once
                         if "fwd" in model1_name and "rev" in model2_name:
                             label = "Fwd vs Bwd"
-                            color = "#6AAB9C"
+                            color = "#E8B7D4"
+                            ls = "-"
                         elif "fwd" in model1_name and "perm" in model2_name:
                             label = "Fwd vs Perm"
-                            color = "#E06C7B"
+                            color = "#FF7B89"
+                            ls = "--"
                         elif "rev" in model1_name and "perm" in model2_name:
                             label = "Bwd vs Perm"
                             color = "#5874DC"
+                            ls = ":"
                         else:
                             raise ValueError("Invalid model names for comparison.")
                         
-                        ax.plot(
+                        line, = ax.plot(
                             range(num_layers), rsa_scores_x_layers_rsa_mean,
                             label=label,
-                            marker="o",
                             color=color,
+                            linewidth=lw,
+                            linestyle=ls,
                         )
+                        if ax_idx == 0:
+                            legend_handles.append(line)
+                            legend_labels.append(label)
+
                         ax.fill_between(
                             range(num_layers), 
                             np.array(rsa_scores_x_layers_rsa_mean) - np.array(rsa_scores_x_layers_rsa_std),
@@ -375,18 +413,26 @@ def main():
                             color=color,
                         )
 
+                if ax_idx == 0:
+                    ax.set_ylabel(f"RSA ({rsa_metric})")
                 ax.set_title(f"{model_family}")
                 ax.set_xlabel("Layer")
-                ax.set_ylabel(f"RSA Score ({rsa_metric})")
-                ax.set_ylim(-1, 1)
-                ax.legend()
+                ax.set_ylim(-0.1, 1)
                 ax.spines['top'].set_visible(False)
                 ax.spines['right'].set_visible(False)
                 ax.grid(True)
                 ax_idx += 1
+            
+            fig.legend(
+                legend_handles,
+                legend_labels,
+                loc='lower center',
+                ncol=3,
+                bbox_to_anchor=(0.5, 0.005),
+                frameon=True
+            )
         
-            # Save the figure for this seed
-            plt.tight_layout()
+            plt.subplots_adjust(left=0.1, right=0.95, top=0.85, bottom=0.3, wspace=0.1)
             plt.savefig(f"figs/rsa_results_{rdm_metric}_{rsa_metric}_{seed}.pdf")
 
 
