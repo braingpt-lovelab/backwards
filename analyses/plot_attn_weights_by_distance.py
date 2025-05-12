@@ -318,7 +318,7 @@ def visualize_attention_weights_norm_ranks(attn_weights_x_batches):
 
         # Customize plot
         ax.set_xlabel("Token Distance")
-        ax.set_ylabel("Attention Weight\n(Norm Rank)")
+        ax.set_ylabel("Attention\nNorm Rank")
         ax.set_ylim(0, 1)
         ax.set_yticks([0, 0.5, 1])
         ax.set_yticklabels([0, 0.5, 1])
@@ -394,7 +394,7 @@ def visualize_attention_weights_entropy_per_row(attn_weights_x_batches):
 
         # Customize plot
         ax.set_xlabel("Context Size")
-        ax.set_ylabel("Mean Entropy")
+        ax.set_ylabel("Attention\nNorm Entropy")
         ax.set_ylim(0, 1)
         ax.set_yticks([0, 0.5, 1])
         ax.set_yticklabels([0, 0.5, 1])
