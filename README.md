@@ -20,6 +20,7 @@ All model weights (including checkpoints) are hosted [here](https://huggingface.
 * Training configurations can be set in `configs/` and `accel_config.yaml`.
 * Forward tokenizer can be trained from scratch by `tokenizer.py`.
 * Training data is hosted [here](https://huggingface.co/datasets/BrainGPT/train_valid_split_pmc_neuroscience_2002-2022_filtered_subset/discussions).
+* Tokenize and cache training/validation data: `caching_tokenized_dataset.py` (for neuroscience), `caching_tokenized_dataset_for_pile10k.py` (for The Pile).
 
 ### Reproduce analyses from scratch:
 `cd analyses`
