@@ -203,6 +203,7 @@ def load_model_and_tokenizer(model_fpath, tokenizer_only=False):
 
     # Load model trained from scratch from local checkpoint
     if model_fpath in [
+            "gpt2_scratch",
             "gpt2_scratch_neuro_tokenizer",
             "gpt2_scratch_neuro_tokenizer_backwards",
             "gpt2-medium_scratch_neuro_tokenizer",
